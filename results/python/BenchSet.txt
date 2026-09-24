@@ -1,0 +1,19 @@
+Generating 100,000 binary records...
+Populating databases (Pre-loading 100k items)...
+Databases ready.
+
+--- INSERT BENCHMARK (1,000 items) ---
+Standard List:  0.810924 s
+Your Solution:  0.001212 s
+Python Set:     0.000238 s
+------------------------------
+Your Speedup vs List: 669.1x
+Set Speedup vs List:  3404.4x
+
+--- SEARCH BENCHMARK (1,000 items) ---
+Standard List:  0.746051 s
+Your Solution:  0.000625 s
+Python Set:     0.000182 s
+------------------------------
+Your Speedup vs List: 1194.6x
+Set Speedup vs List:  4092.4x

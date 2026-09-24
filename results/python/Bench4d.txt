@@ -1,0 +1,15 @@
+Generating 100,000 binary records...
+Populating databases...
+Databases ready.
+
+--- INSERT BENCHMARK (1,000 items) ---
+Standard List:  0.755925 s
+3-Layer List:   0.000913 s
+4-Layer List:   0.001190 s
+Python Set:     0.000184 s
+
+--- SEARCH BENCHMARK (1,000 items) ---
+Standard List:  0.741243 s
+3-Layer List:   0.000698 s
+4-Layer List:   0.000577 s
+Python Set:     0.000182 s

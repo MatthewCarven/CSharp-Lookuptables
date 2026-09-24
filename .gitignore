@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+*.user
+TestResults/
+
+# BenchmarkDotNet writes its working files next to the run; the reports we keep live in results/bdn/results.
+BenchmarkDotNet.Artifacts/
+results/bdn/*.log
+
+# Scratch data from the disk benchmark (can be many GB).
+disk-bench/
+
+# Local clone of the original Python repo, used for the baseline run.
+python-src/

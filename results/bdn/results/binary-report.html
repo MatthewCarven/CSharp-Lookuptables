@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Lookuptables.Bench.LookupBenchmarks_System.Byte[], ByteKey_-20260924-194608</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.22631.3810/23H2/2023Update/SunValley3)
+11th Gen Intel Core i9-11900H 2.50GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 10.0.401
+  [Host]   : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v4
+  ShortRun : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Structure              </th><th>Mean    </th><th>Error     </th><th>StdDev   </th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Contains</td><td>Flat table, 1 byte</td><td>1,490.004 ns</td><td>374.946 ns</td><td>20.5521 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 1 byte</td><td>1,770.668 ns</td><td>514.257 ns</td><td>28.1882 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Flat table, 2 bytes</td><td>13.672 ns</td><td>2.039 ns</td><td>0.1118 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 2 bytes</td><td>30.785 ns</td><td>42.789 ns</td><td>2.3454 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Flat table, 3 bytes</td><td>9.857 ns</td><td>4.372 ns</td><td>0.2396 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 3 bytes</td><td>31.106 ns</td><td>25.543 ns</td><td>1.4001 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>FrozenSet&lt;T&gt;</td><td>18.268 ns</td><td>18.684 ns</td><td>1.0241 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>FrozenSet&lt;T&gt;</td><td>617,519.267 ns</td><td>524,805.505 ns</td><td>28,766.3607 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>HashSet&lt;T&gt;</td><td>21.046 ns</td><td>5.958 ns</td><td>0.3266 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>HashSet&lt;T&gt;</td><td>474,603.533 ns</td><td>17,440.355 ns</td><td>955.9647 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>List&lt;T&gt; linear scan</td><td>316,536.017 ns</td><td>137,364.981 ns</td><td>7,529.4382 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>List&lt;T&gt; linear scan</td><td>592,943.000 ns</td><td>1,830,109.114 ns</td><td>100,314.4564 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Nested dict, 3 layers</td><td>39.550 ns</td><td>82.247 ns</td><td>4.5082 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Nested dict, 3 layers</td><td>89.287 ns</td><td>296.636 ns</td><td>16.2596 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Nested dict, 4 layers</td><td>53.446 ns</td><td>57.769 ns</td><td>3.1665 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Nested dict, 4 layers</td><td>167.415 ns</td><td>44.116 ns</td><td>2.4181 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Sorted List&lt;T&gt; + BinarySearch</td><td>213.618 ns</td><td>32.771 ns</td><td>1.7963 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Sorted List&lt;T&gt; + BinarySearch</td><td>195.323 ns</td><td>111.732 ns</td><td>6.1244 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>SortedSet&lt;T&gt;</td><td>293.214 ns</td><td>759.974 ns</td><td>41.6567 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>SortedSet&lt;T&gt;</td><td>549.134 ns</td><td>195.207 ns</td><td>10.7000 ns</td><td>0.0303</td><td>392 B</td>
+</tr></tbody></table>
+</body>
+</html>

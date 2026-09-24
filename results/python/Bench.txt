@@ -1,0 +1,12 @@
+Generating data...
+Database size: 9995 unique items.
+
+--- INSERT RESULTS (10000 items) ---
+Standard List:  1.448949 seconds
+Bucketed List:  0.099701 seconds
+Speed Increase: 14.5x FASTER
+
+--- SEARCH RESULTS (10000 searches) ---
+Standard List:  1.859024 seconds
+Bucketed List:  0.074730 seconds
+Speed Increase: 24.9x FASTER

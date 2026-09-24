@@ -1,0 +1,499 @@
+{
+  "environment": ".NET 10.0.12, Microsoft Windows 10.0.22631, 11th Gen Intel(R) Core(TM) i9-11900H @ 2.50GHz (16 logical cores)",
+  "scenarios": [
+    {
+      "Scenario": {
+        "Id": "bench",
+        "Title": "Bench.py - 1 layer, 10k words",
+        "PythonSource": "Bench.py",
+        "Kind": "UpperAlpha",
+        "KeyLength": 5,
+        "Pool": 10000,
+        "Inserts": 10000,
+        "Searches": 10000,
+        "Prefixes": 1000,
+        "PrefixLength": 3,
+        "MaxKeysPerBucket": null
+      },
+      "PoolDistinct": 9995,
+      "FinalDistinct": 19979,
+      "Results": [
+        {
+          "Structure": "List\u003CT\u003E linear scan",
+          "Family": "PythonPort",
+          "BuildMs": 0.0115,
+          "InsertNsPerOp": 41183.96,
+          "SearchNsPerOp": 41530.98,
+          "PrefixUsPerQuery": 69.7327,
+          "MemoryMB": 0.07628631591796875
+        },
+        {
+          "Structure": "Nested dict, 1 layer",
+          "Family": "PythonPort",
+          "BuildMs": 0.1162,
+          "InsertNsPerOp": 2037.97,
+          "SearchNsPerOp": 2043.28,
+          "PrefixUsPerQuery": 2.961,
+          "MemoryMB": 0.10491943359375
+        },
+        {
+          "Structure": "Nested dict, 2 layers",
+          "Family": "PythonPort",
+          "BuildMs": 0.2723,
+          "InsertNsPerOp": 118.75,
+          "SearchNsPerOp": 111.43,
+          "PrefixUsPerQuery": 0.2023,
+          "MemoryMB": 0.1954498291015625
+        },
+        {
+          "Structure": "Nested dict, 3 layers",
+          "Family": "PythonPort",
+          "BuildMs": 0.7523,
+          "InsertNsPerOp": 81.19,
+          "SearchNsPerOp": 61.86,
+          "PrefixUsPerQuery": 0.08,
+          "MemoryMB": 1.3050994873046875
+        },
+        {
+          "Structure": "Flat table, 1 symbol",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.0929,
+          "InsertNsPerOp": 2028.01,
+          "SearchNsPerOp": 2018.39,
+          "PrefixUsPerQuery": 3.0901,
+          "MemoryMB": 0.10320281982421875
+        },
+        {
+          "Structure": "Flat table, 2 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.1754,
+          "InsertNsPerOp": 109.74,
+          "SearchNsPerOp": 106.34,
+          "PrefixUsPerQuery": 0.1858,
+          "MemoryMB": 0.14910125732421875
+        },
+        {
+          "Structure": "Flat table, 3 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.2772,
+          "InsertNsPerOp": 38.73,
+          "SearchNsPerOp": 37.55,
+          "PrefixUsPerQuery": 0.0507,
+          "MemoryMB": 0.7706680297851562
+        },
+        {
+          "Structure": "Flat table, 4 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 1.7581,
+          "InsertNsPerOp": 70.41,
+          "SearchNsPerOp": 47.5,
+          "PrefixUsPerQuery": 0.1322,
+          "MemoryMB": 4.313468933105469
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 0.1587,
+          "InsertNsPerOp": 23.84,
+          "SearchNsPerOp": 28.03,
+          "PrefixUsPerQuery": 65.5461,
+          "MemoryMB": 0.19278717041015625
+        },
+        {
+          "Structure": "FrozenSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 2.6179,
+          "InsertNsPerOp": null,
+          "SearchNsPerOp": 32.18,
+          "PrefixUsPerQuery": 172.7894,
+          "MemoryMB": 0.6282958984375
+        },
+        {
+          "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
+          "Family": "BuiltIn",
+          "BuildMs": 1.1653,
+          "InsertNsPerOp": 1380.39,
+          "SearchNsPerOp": 136.49,
+          "PrefixUsPerQuery": 0.1829,
+          "MemoryMB": 0.07628631591796875
+        },
+        {
+          "Structure": "SortedSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 1.3563,
+          "InsertNsPerOp": 177.03,
+          "SearchNsPerOp": 165.89,
+          "PrefixUsPerQuery": 0.4007,
+          "MemoryMB": 0.45760345458984375
+        }
+      ],
+      "Skipped": []
+    },
+    {
+      "Scenario": {
+        "Id": "bench2d",
+        "Title": "Bench2D.py - 2 layers, 50k words",
+        "PythonSource": "Bench2D.py",
+        "Kind": "UpperAlpha",
+        "KeyLength": 5,
+        "Pool": 50000,
+        "Inserts": 10000,
+        "Searches": 10000,
+        "Prefixes": 1000,
+        "PrefixLength": 3,
+        "MaxKeysPerBucket": null
+      },
+      "PoolDistinct": 49906,
+      "FinalDistinct": 59869,
+      "Results": [
+        {
+          "Structure": "List\u003CT\u003E linear scan",
+          "Family": "PythonPort",
+          "BuildMs": 0.0267,
+          "InsertNsPerOp": 189406.65,
+          "SearchNsPerOp": 154141.7,
+          "PrefixUsPerQuery": 210.1548,
+          "MemoryMB": 0.38080596923828125
+        },
+        {
+          "Structure": "Nested dict, 1 layer",
+          "Family": "PythonPort",
+          "BuildMs": 0.4771,
+          "InsertNsPerOp": 6789,
+          "SearchNsPerOp": 5638.99,
+          "PrefixUsPerQuery": 9.5975,
+          "MemoryMB": 0.40960693359375
+        },
+        {
+          "Structure": "Nested dict, 2 layers",
+          "Family": "PythonPort",
+          "BuildMs": 1.1139,
+          "InsertNsPerOp": 341.81,
+          "SearchNsPerOp": 295.37,
+          "PrefixUsPerQuery": 0.5347,
+          "MemoryMB": 0.7004547119140625
+        },
+        {
+          "Structure": "Nested dict, 3 layers",
+          "Family": "PythonPort",
+          "BuildMs": 2.9722,
+          "InsertNsPerOp": 103.83,
+          "SearchNsPerOp": 92.62,
+          "PrefixUsPerQuery": 0.0964,
+          "MemoryMB": 2.789337158203125
+        },
+        {
+          "Structure": "Flat table, 1 symbol",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.3765,
+          "InsertNsPerOp": 8049.98,
+          "SearchNsPerOp": 6713.63,
+          "PrefixUsPerQuery": 9.673,
+          "MemoryMB": 0.40789031982421875
+        },
+        {
+          "Structure": "Flat table, 2 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.6877,
+          "InsertNsPerOp": 361.04,
+          "SearchNsPerOp": 310.26,
+          "PrefixUsPerQuery": 0.5029,
+          "MemoryMB": 0.6541061401367188
+        },
+        {
+          "Structure": "Flat table, 3 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 1.2165,
+          "InsertNsPerOp": 57.6,
+          "SearchNsPerOp": 55.51,
+          "PrefixUsPerQuery": 0.061,
+          "MemoryMB": 1.5933609008789062
+        },
+        {
+          "Structure": "Flat table, 4 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 5.0306,
+          "InsertNsPerOp": 60.02,
+          "SearchNsPerOp": 47.32,
+          "PrefixUsPerQuery": 0.1851,
+          "MemoryMB": 7.449798583984375
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 0.7821,
+          "InsertNsPerOp": 59.53,
+          "SearchNsPerOp": 33.63,
+          "PrefixUsPerQuery": 195.0017,
+          "MemoryMB": 0.9988174438476562
+        },
+        {
+          "Structure": "FrozenSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 8.5206,
+          "InsertNsPerOp": null,
+          "SearchNsPerOp": 29.81,
+          "PrefixUsPerQuery": 532.1703,
+          "MemoryMB": 1.8788375854492188
+        },
+        {
+          "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
+          "Family": "BuiltIn",
+          "BuildMs": 7.6131,
+          "InsertNsPerOp": 4708.14,
+          "SearchNsPerOp": 177.74,
+          "PrefixUsPerQuery": 0.2416,
+          "MemoryMB": 0.38080596923828125
+        },
+        {
+          "Structure": "SortedSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 8.5741,
+          "InsertNsPerOp": 229.21,
+          "SearchNsPerOp": 210.03,
+          "PrefixUsPerQuery": 0.5113,
+          "MemoryMB": 2.2845840454101562
+        }
+      ],
+      "Skipped": []
+    },
+    {
+      "Scenario": {
+        "Id": "bench3d",
+        "Title": "Bench3D.py - 3 layers, 100k words",
+        "PythonSource": "Bench3D.py",
+        "Kind": "UpperAlpha",
+        "KeyLength": 6,
+        "Pool": 100000,
+        "Inserts": 1000,
+        "Searches": 1000,
+        "Prefixes": 1000,
+        "PrefixLength": 3,
+        "MaxKeysPerBucket": null
+      },
+      "PoolDistinct": 99983,
+      "FinalDistinct": 100983,
+      "Results": [
+        {
+          "Structure": "List\u003CT\u003E linear scan",
+          "Family": "PythonPort",
+          "BuildMs": 0.054,
+          "InsertNsPerOp": 349526.7,
+          "SearchNsPerOp": 265493.7,
+          "PrefixUsPerQuery": 358.8612,
+          "MemoryMB": 0.7628631591796875
+        },
+        {
+          "Structure": "Nested dict, 1 layer",
+          "Family": "PythonPort",
+          "BuildMs": 0.9687,
+          "InsertNsPerOp": 14529.1,
+          "SearchNsPerOp": 10962.3,
+          "PrefixUsPerQuery": 18.172400000000003,
+          "MemoryMB": 0.81585693359375
+        },
+        {
+          "Structure": "Nested dict, 2 layers",
+          "Family": "PythonPort",
+          "BuildMs": 2.0888,
+          "InsertNsPerOp": 628.5,
+          "SearchNsPerOp": 500.9,
+          "PrefixUsPerQuery": 0.9111,
+          "MemoryMB": 1.3689117431640625
+        },
+        {
+          "Structure": "Nested dict, 3 layers",
+          "Family": "PythonPort",
+          "BuildMs": 6.0945,
+          "InsertNsPerOp": 152.9,
+          "SearchNsPerOp": 119.7,
+          "PrefixUsPerQuery": 0.1154,
+          "MemoryMB": 3.3017349243164062
+        },
+        {
+          "Structure": "Flat table, 1 symbol",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.7404,
+          "InsertNsPerOp": 16458.6,
+          "SearchNsPerOp": 12492.2,
+          "PrefixUsPerQuery": 18.1182,
+          "MemoryMB": 0.8141403198242188
+        },
+        {
+          "Structure": "Flat table, 2 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 1.307,
+          "InsertNsPerOp": 685,
+          "SearchNsPerOp": 535.3,
+          "PrefixUsPerQuery": 0.8868,
+          "MemoryMB": 1.3225631713867188
+        },
+        {
+          "Structure": "Flat table, 3 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 2.6318,
+          "InsertNsPerOp": 91.6,
+          "SearchNsPerOp": 72.6,
+          "PrefixUsPerQuery": 0.071,
+          "MemoryMB": 2.0970001220703125
+        },
+        {
+          "Structure": "Flat table, 4 symbols",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 4.9629,
+          "InsertNsPerOp": 51.5,
+          "SearchNsPerOp": 46.3,
+          "PrefixUsPerQuery": 0.2236,
+          "MemoryMB": 10.992805480957031
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 1.7326,
+          "InsertNsPerOp": 35,
+          "SearchNsPerOp": 38.7,
+          "PrefixUsPerQuery": 330.1562,
+          "MemoryMB": 2.07208251953125
+        },
+        {
+          "Structure": "FrozenSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 15.9554,
+          "InsertNsPerOp": null,
+          "SearchNsPerOp": 63.9,
+          "PrefixUsPerQuery": 908.1397,
+          "MemoryMB": 3.218597412109375
+        },
+        {
+          "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
+          "Family": "BuiltIn",
+          "BuildMs": 16.787,
+          "InsertNsPerOp": 8614.5,
+          "SearchNsPerOp": 201.2,
+          "PrefixUsPerQuery": 0.2881,
+          "MemoryMB": 0.7628631591796875
+        },
+        {
+          "Structure": "SortedSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 18.8584,
+          "InsertNsPerOp": 284.8,
+          "SearchNsPerOp": 227.5,
+          "PrefixUsPerQuery": 0.6,
+          "MemoryMB": 4.576927185058594
+        }
+      ],
+      "Skipped": []
+    },
+    {
+      "Scenario": {
+        "Id": "binary",
+        "Title": "BenchBinary.py / BenchSet.py / Bench4d.py - 100k binary records",
+        "PythonSource": "BenchBinary.py, BenchSet.py, Bench4d.py",
+        "Kind": "Bytes",
+        "KeyLength": 16,
+        "Pool": 100000,
+        "Inserts": 1000,
+        "Searches": 1000,
+        "Prefixes": 1000,
+        "PrefixLength": 3,
+        "MaxKeysPerBucket": null
+      },
+      "PoolDistinct": 100000,
+      "FinalDistinct": 101000,
+      "Results": [
+        {
+          "Structure": "List\u003CT\u003E linear scan",
+          "Family": "PythonPort",
+          "BuildMs": 0.0599,
+          "InsertNsPerOp": 312184.9,
+          "SearchNsPerOp": 235179.6,
+          "PrefixUsPerQuery": 353.6618,
+          "MemoryMB": 0.7629928588867188
+        },
+        {
+          "Structure": "Nested dict, 3 layers",
+          "Family": "PythonPort",
+          "BuildMs": 32.1177,
+          "InsertNsPerOp": 453.3,
+          "SearchNsPerOp": 204,
+          "PrefixUsPerQuery": 0.3512,
+          "MemoryMB": 26.49945831298828
+        },
+        {
+          "Structure": "Nested dict, 4 layers",
+          "Family": "PythonPort",
+          "BuildMs": 105.3508,
+          "InsertNsPerOp": 618.7,
+          "SearchNsPerOp": 286.8,
+          "PrefixUsPerQuery": 0.5076,
+          "MemoryMB": 50.112274169921875
+        },
+        {
+          "Structure": "Flat table, 1 byte",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 0.9916,
+          "InsertNsPerOp": 1565.6,
+          "SearchNsPerOp": 1182.9,
+          "PrefixUsPerQuery": 1.4356,
+          "MemoryMB": 1.0156784057617188
+        },
+        {
+          "Structure": "Flat table, 2 bytes",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 2.9221,
+          "InsertNsPerOp": 72.4,
+          "SearchNsPerOp": 62.5,
+          "PrefixUsPerQuery": 0.0968,
+          "MemoryMB": 4.8170013427734375
+        },
+        {
+          "Structure": "Flat table, 3 bytes",
+          "Family": "CSharpLookupTable",
+          "BuildMs": 19.5902,
+          "InsertNsPerOp": 169.2,
+          "SearchNsPerOp": 98.1,
+          "PrefixUsPerQuery": 0.1724,
+          "MemoryMB": 136.34154510498047
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 2.452,
+          "InsertNsPerOp": 45.5,
+          "SearchNsPerOp": 46.9,
+          "PrefixUsPerQuery": 350.1093,
+          "MemoryMB": 2.07208251953125
+        },
+        {
+          "Structure": "FrozenSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 12.838,
+          "InsertNsPerOp": null,
+          "SearchNsPerOp": 132.4,
+          "PrefixUsPerQuery": 857.1535,
+          "MemoryMB": 3.2187728881835938
+        },
+        {
+          "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
+          "Family": "BuiltIn",
+          "BuildMs": 18.6716,
+          "InsertNsPerOp": 8735.7,
+          "SearchNsPerOp": 273.3,
+          "PrefixUsPerQuery": 0.2759,
+          "MemoryMB": 0.7629928588867188
+        },
+        {
+          "Structure": "SortedSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 20.5719,
+          "InsertNsPerOp": 348,
+          "SearchNsPerOp": 281.1,
+          "PrefixUsPerQuery": 0.6192,
+          "MemoryMB": 4.577705383300781
+        }
+      ],
+      "Skipped": []
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/bench/">
+    <Project Path="bench/Lookuptables.Bench/Lookuptables.Bench.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Lookuptables/Lookuptables.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Lookuptables.Tests/Lookuptables.Tests.csproj" />
+  </Folder>
+</Solution>

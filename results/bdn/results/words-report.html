@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Lookuptables.Bench.LookupBenchmarks_String, UpperAlphaKey_-20260924-194305</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.22631.3810/23H2/2023Update/SunValley3)
+11th Gen Intel Core i9-11900H 2.50GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 10.0.401
+  [Host]   : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v4
+  ShortRun : .NET 10.0.12 (10.0.12, 10.0.1226.42308), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Structure              </th><th>Mean    </th><th>Error   </th><th>StdDev  </th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Contains</td><td>Flat table, 1 symbol</td><td>16,781.979 ns</td><td>6,759.014 ns</td><td>370.4844 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 1 symbol</td><td>23,734.870 ns</td><td>21,944.250 ns</td><td>1,202.8384 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Flat table, 2 symbols</td><td>661.123 ns</td><td>193.986 ns</td><td>10.6330 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 2 symbols</td><td>1,147.421 ns</td><td>350.135 ns</td><td>19.1921 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Flat table, 3 symbols</td><td>40.356 ns</td><td>21.198 ns</td><td>1.1619 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 3 symbols</td><td>32.114 ns</td><td>16.004 ns</td><td>0.8772 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Flat table, 4 symbols</td><td>9.924 ns</td><td>5.369 ns</td><td>0.2943 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Flat table, 4 symbols</td><td>259.430 ns</td><td>144.463 ns</td><td>7.9185 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>FrozenSet&lt;T&gt;</td><td>11.368 ns</td><td>3.311 ns</td><td>0.1815 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>FrozenSet&lt;T&gt;</td><td>620,390.167 ns</td><td>480,636.974 ns</td><td>26,345.3345 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>HashSet&lt;T&gt;</td><td>12.742 ns</td><td>3.939 ns</td><td>0.2159 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>HashSet&lt;T&gt;</td><td>474,305.367 ns</td><td>177,027.411 ns</td><td>9,703.4698 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>List&lt;T&gt; linear scan</td><td>369,047.033 ns</td><td>41,128.908 ns</td><td>2,254.4143 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>List&lt;T&gt; linear scan</td><td>538,130.333 ns</td><td>241,783.683 ns</td><td>13,252.9796 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Nested dict, 1 layer</td><td>17,073.274 ns</td><td>9,200.845 ns</td><td>504.3294 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Nested dict, 1 layer</td><td>25,773.183 ns</td><td>13,227.501 ns</td><td>725.0440 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Nested dict, 2 layers</td><td>753.274 ns</td><td>496.308 ns</td><td>27.2043 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Nested dict, 2 layers</td><td>1,176.534 ns</td><td>421.887 ns</td><td>23.1251 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Nested dict, 3 layers</td><td>95.943 ns</td><td>7.476 ns</td><td>0.4098 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Nested dict, 3 layers</td><td>92.301 ns</td><td>10.260 ns</td><td>0.5624 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>Sorted List&lt;T&gt; + BinarySearch</td><td>253.760 ns</td><td>101.030 ns</td><td>5.5378 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>Sorted List&lt;T&gt; + BinarySearch</td><td>370.934 ns</td><td>34.797 ns</td><td>1.9073 ns</td><td>-</td><td>-</td>
+</tr><tr><td>Contains</td><td>SortedSet&lt;T&gt;</td><td>267.363 ns</td><td>102.032 ns</td><td>5.5927 ns</td><td>-</td><td>-</td>
+</tr><tr><td>PrefixQuery</td><td>SortedSet&lt;T&gt;</td><td>997.752 ns</td><td>265.892 ns</td><td>14.5744 ns</td><td>0.0303</td><td>392 B</td>
+</tr></tbody></table>
+</body>
+</html>

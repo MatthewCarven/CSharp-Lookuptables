@@ -1,0 +1,12 @@
+Generating 50,000 initial words...
+Database populated with 49907 items.
+
+--- INSERT BENCHMARK (Checking uniqueness for 10,000 new items) ---
+Standard List:  5.245749 s
+1-Layer List:   0.234561 s  (22.4x faster)
+2-Layer List:   0.012498 s  (419.7x faster)
+
+--- SEARCH BENCHMARK (Looking up 10,000 items) ---
+Standard List:  5.442603 s
+1-Layer List:   0.260148 s  (20.9x faster)
+2-Layer List:   0.014190 s  (383.6x faster)

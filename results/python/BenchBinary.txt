@@ -1,0 +1,13 @@
+Generating 100,000 binary records (16 bytes each)...
+Populating databases...
+Database populated with 100000 items.
+
+--- INSERT BENCHMARK (Binary) ---
+Standard List:  0.730374 s
+3-Layer Binary: 0.001083 s
+Speed Increase: 674.4x FASTER
+
+--- SEARCH BENCHMARK (Binary) ---
+Standard List:  0.732657 s
+3-Layer Binary: 0.000641 s
+Speed Increase: 1143.0x FASTER

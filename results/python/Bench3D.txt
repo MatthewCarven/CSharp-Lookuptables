@@ -1,0 +1,15 @@
+Generating 100,000 initial words (this may take a moment)...
+Populating databases...
+Database populated with 99990 items.
+
+--- INSERT BENCHMARK (1,000 items into 100k DB) ---
+Standard List:  0.911512 s
+1-Layer List:   0.045111 s  (Speedup: 20.2x)
+2-Layer List:   0.002358 s  (Speedup: 386.5x)
+3-Layer List:   0.000751 s  (Speedup: 1214.2x)
+
+--- SEARCH BENCHMARK (Find 1,000 items in 100k DB) ---
+Standard List:  0.908184 s
+1-Layer List:   0.045910 s  (Speedup: 19.8x)
+2-Layer List:   0.002344 s  (Speedup: 387.5x)
+3-Layer List:   0.000808 s  (Speedup: 1124.0x)
