@@ -18,6 +18,8 @@ right bucket, instead of a search through everything.
   has to scan every key. That makes the table about 17,000x faster than a hash set.
 - **For plain "does this key exist?" lookups, `HashSet<T>` is the one to beat.** A flat table ties or beats it
   (9.9 ns vs 21 ns warm, 135 ns vs 129 ns at 1M keys) when each bucket holds about one key, but it costs up to 10x the memory.
+- **On disk it scales.** On a 64 GB database, 8x the machine's RAM, the bucket index finds a record in
+  **0.36 ms**, while a full scan of the file takes 43 s: about 118,000x faster.
 - **The ported Python design (nested dictionaries) is 1.4-6x faster in C# than in Python.** Replacing the
   dictionaries with one flat array gives up to another 3x on top.
 
@@ -41,7 +43,7 @@ dotnet run -c Release --project bench/Lookuptables.Bench -- python
 |---|---|
 | `python` | The in-memory scripts at their original sizes: Bench, Bench2D, Bench3D, BenchBinary/BenchSet/Bench4d |
 | `scale` | 1,000,000 keys. Structures averaging over 1,000 keys per bucket are skipped |
-| `disk` | BenchDisk2.py. The default database is 125 MB; add `--disk-records 250000` for the original 16 GB |
+| `disk` | BenchDisk2.py. The default database is 125 MB; `--disk-gb 16` matches the Python script, `--disk-gb 64` is the run below |
 | `all` | `python` + `scale` + `disk` |
 | `bdn --filter '*' --job short` | BenchmarkDotNet microbenchmarks of `Contains` and the prefix query |
 
@@ -182,11 +184,23 @@ converted to time per operation.
 The layering behaves the same way in both languages: each extra layer divides the scan by the number of symbols, so the
 Python scripts' 1,000x+ speed-ups over a plain list carry over.
 
-### 4. Disk index (BenchDisk2.py)
+### 4. Disk index (BenchDisk2.py), 64 GB
 
-2,000 x 64 KB records (125 MB), 131,070 lookups: the index takes **0.057 ms per lookup** against 68 ms for a batched full
-scan, a **~1,200x** speed-up. At this size both files sit in the OS page cache, so this measures cached reads more
-than the disk itself. Run with `--disk-records 250000` for the original 16 GB database.
+1,048,592 records of 64 KB each, stored twice: a 64 GB flat file and a 64 GB bucket index, 128 GB in total. That is 8x the
+machine's 15.8 GB of RAM, so neither the OS file cache nor the SSD's own cache can hold it, and the reads really come off
+the SSD. The run made 131,070 lookups, half of them hits spread across every record on disk
+([results/csharp-disk.md](results/csharp-disk.md)).
+
+| Method | Per lookup | All 131,070 lookups |
+|---|--:|--:|
+| Indexed: open one bucket file and read ~64 KB | **0.36 ms** | 47 s |
+| Batched full scan of the flat file (5 samples, 913 MB/s) | 42.7 s | ~1,554 hours (projected) |
+
+That's a **~118,000x** speed-up. Writing the database took 24 minutes, averaging 90 MB/s: the SSD slowed down once its
+fast write cache filled, and each record also creates or appends to a small index file. For comparison, a 125 MB
+database that fits in RAM gives 0.057 ms per indexed lookup, so reading from the SSD itself adds about 0.3 ms per lookup.
+
+To reproduce this, run `disk --disk-gb 64`. It needs about 135 GB free, and it deletes the generated files when it finishes.
 
 ## Methodology and differences from the Python scripts
 
@@ -194,6 +208,7 @@ than the disk itself. Run with `--disk-records 250000` for the original 16 GB da
 - **Seeded data.** Data comes from `Random(42)` rather than `os.urandom`, so runs are reproducible (`--seed` to change).
 - **Half the searches hit.** Searches are 50% existing keys and 50% random keys. The Python scripts searched random keys only, so they almost always missed.
 - **Bulk pre-load.** Pre-loading uses a bulk load of already-distinct keys instead of N `add_unique` calls. The final state is the same; only the timed insert phase uses `AddUnique`.
+- **Disk lookups spread across every record.** Python keeps ~100 records and looks them up over and over, so after the first pass every hit comes from the OS file cache, and each miss holds a new 64 KB record in RAM. Here each record's contents are generated from its record number, so any record can be looked up without keeping it in memory, and the hits land all over the disk.
 - **Record-aligned disk scan.** The disk scan compares whole records. Python's `target in chunk_batch` is a substring search, which could in theory match across two records.
 - **Noise in the small scenarios.** The Python-sized scenarios use only 1,000 searches, so they're single-pass and vary by about ±30% between runs. The 1M-key suite and BenchmarkDotNet numbers are the more reliable ones.
 

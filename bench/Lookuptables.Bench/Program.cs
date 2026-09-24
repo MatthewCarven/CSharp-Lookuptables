@@ -11,7 +11,7 @@ const string Usage = """
     Suites (default: python):
       python   The in-memory Python scripts (Bench, Bench2D, Bench3D, BenchBinary/BenchSet/Bench4d)
       scale    The same structures at 1,000,000 keys (structures averaging >1,000 keys per bucket skipped)
-      disk     Port of BenchDisk2.py (defaults to a ~125 MB database; use --disk-records 250000 for 16 GB)
+      disk     Port of BenchDisk2.py (defaults to a ~125 MB database; --disk-gb 16 matches the Python script)
       all      python + scale + disk
       bdn      BenchmarkDotNet microbenchmarks; remaining arguments go to BenchmarkDotNet (e.g. --job short)
 
@@ -21,6 +21,7 @@ const string Usage = """
       --out DIR           where results are written (default ./results)
       --disk-dir DIR      working directory for the disk suite (default ./disk-bench)
       --disk-records N    records to generate (default 2000)
+      --disk-gb N         size the flat file in GB instead (the index takes the same again)
       --disk-lookups N    indexed lookups (default 131070, as in BenchDisk2.py)
       --keep-disk         keep the generated disk files
     """;
@@ -41,6 +42,7 @@ if (args.Length > 0 && args[0] == "bdn")
 var suites = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 int reps = 7, seed = 42, diskRecords = 2000, diskLookups = 131_070;
 string outDir = "results", diskDir = "disk-bench";
+const int DiskRecordSize = 65_535; // RECORD_SIZE in BenchDisk2.py
 bool keepDisk = false;
 
 for (int i = 0; i < args.Length; i++)
@@ -53,6 +55,7 @@ for (int i = 0; i < args.Length; i++)
         case "--out": outDir = Value(); break;
         case "--disk-dir": diskDir = Value(); break;
         case "--disk-records": diskRecords = int.Parse(Value()); break;
+        case "--disk-gb": diskRecords = checked((int)(double.Parse(Value()) * (1L << 30) / DiskRecordSize)); break;
         case "--disk-lookups": diskLookups = int.Parse(Value()); break;
         case "--keep-disk": keepDisk = true; break;
         case "python" or "scale" or "disk": suites.Add(args[i]); break;
@@ -104,11 +107,13 @@ foreach (Scenario s in scenarios)
         : harness.Run(s, DatasetFactory.Bytes(s.KeyLength, s.Pool, s.Inserts, s.Searches, s.Prefixes, s.PrefixLength, seed), StructureCatalog.Bytes()));
 }
 
-string markdown = Report.ToMarkdown(results, environment, reps);
+string markdown = results.Count > 0
+    ? Report.ToMarkdown(results, environment, reps)
+    : $"# C# results\n\n- Environment: {environment}\n";
 if (suites.Contains("disk"))
 {
     Console.WriteLine();
-    markdown += "\n" + DiskBenchmark.Run(new DiskOptions(Path.GetFullPath(diskDir), diskRecords, 65_535, diskLookups,
+    markdown += "\n" + DiskBenchmark.Run(new DiskOptions(Path.GetFullPath(diskDir), diskRecords, DiskRecordSize, diskLookups,
         LinearSamples: 5, BatchRecords: 1024, keepDisk, seed));
 }
 
