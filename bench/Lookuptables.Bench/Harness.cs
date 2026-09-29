@@ -4,7 +4,7 @@ using Lookuptables;
 
 namespace Lookuptables.Bench;
 
-public enum KeyKind { UpperAlpha, Bytes }
+public enum KeyKind { UpperAlpha, Bytes, SequentialIds }
 
 public sealed record Scenario(
     string Id,
@@ -17,7 +17,7 @@ public sealed record Scenario(
     int Searches,
     int Prefixes,
     int PrefixLength,
-    int? MaxKeysPerBucket);
+    int? MaxMeanScan);
 
 public sealed record StructureResult(
     string Structure,
@@ -26,7 +26,8 @@ public sealed record StructureResult(
     double? InsertNsPerOp,
     double SearchNsPerOp,
     double PrefixUsPerQuery,
-    double MemoryMB);
+    double MemoryMB,
+    string? Shape);
 
 public sealed record ScenarioResult(Scenario Scenario, int PoolDistinct, int FinalDistinct, IReadOnlyList<StructureResult> Results, IReadOnlyList<string> Skipped);
 
@@ -44,16 +45,18 @@ public sealed class Harness(int reps, TimeSpan minWarmup)
         var skipped = new List<string>();
         foreach (StructureFactory<T> factory in structures)
         {
-            // A bucket holding thousands of keys is a linear scan in disguise; at 1M keys it would take hours.
-            if (factory.KeysPerBucket(data.Pool.Length) > scenario.MaxKeysPerBucket)
+            // A fixed table whose buckets hold thousands of keys is a linear scan in disguise; at 1M keys it
+            // would take hours. The estimate uses the real bucket sizes, so skewed data is judged fairly.
+            double? meanScan = factory.IndexDepth is { } depth ? data.MeanScanLength(depth) : null;
+            if (meanScan > scenario.MaxMeanScan)
             {
-                skipped.Add(factory.Name);
+                skipped.Add($"{factory.Name} (~{meanScan:N0} keys per lookup)");
                 continue;
             }
             Console.Write($"  {factory.Name,-32}");
             StructureResult result = Measure(factory, data);
             results.Add(result);
-            Console.WriteLine($" search {result.SearchNsPerOp,12:N1} ns/op");
+            Console.WriteLine($" search {result.SearchNsPerOp,12:N1} ns/op{(result.Shape is null ? "" : "  [" + result.Shape + "]")}");
         }
         return new ScenarioResult(scenario, data.Pool.Length, data.FinalDistinct.Length, results, skipped);
     }
@@ -66,19 +69,22 @@ public sealed class Harness(int reps, TimeSpan minWarmup)
         var prefix = new List<double>();
         double memoryMB = 0;
         bool insertTimed = false;
+        string? shape = null;
 
-        // Warm up until tiered JIT has had time to promote the hot paths (tier-0 -> tier-1 with PGO).
+        // Warm up for a fixed time rather than a fixed count: tiered JIT goes tier-0 -> instrumented -> tier-1,
+        // and each step waits for the code to stay hot for ~100 ms. A capped count on a small data set can finish
+        // before the optimised code arrives and then measure unoptimised code.
         var warmupClock = Stopwatch.StartNew();
         int warmups = 0;
-        while (warmups < 2 || (warmupClock.Elapsed < minWarmup && warmups < 50))
+        while (warmups < 2 || warmupClock.Elapsed < minWarmup)
         {
-            RunOnce(factory, data, out _);
+            RunOnce(factory, data, out _, out _);
             warmups++;
         }
 
         for (int rep = 0; rep < reps; rep++)
         {
-            Timings t = RunOnce(factory, data, out insertTimed);
+            Timings t = RunOnce(factory, data, out insertTimed, out shape);
             build.Add(t.BuildMs);
             insert.Add(t.InsertMs);
             search.Add(t.SearchMs);
@@ -93,12 +99,14 @@ public sealed class Harness(int reps, TimeSpan minWarmup)
             insertTimed ? Median(insert) * 1e6 / data.NewItems.Length : null,
             Median(search) * 1e6 / data.SearchTerms.Length,
             Median(prefix) * 1e3 / data.Prefixes.Length,
-            memoryMB);
+            memoryMB,
+            shape);
     }
 
     private readonly record struct Timings(double BuildMs, double InsertMs, double SearchMs, double PrefixMs, long MemoryBytes);
 
-    private static Timings RunOnce<T>(StructureFactory<T> factory, Dataset<T> data, out bool insertTimed) where T : notnull
+    private static Timings RunOnce<T>(StructureFactory<T> factory, Dataset<T> data, out bool insertTimed, out string? shape)
+        where T : notnull
     {
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -135,7 +143,7 @@ public sealed class Harness(int reps, TimeSpan minWarmup)
         double prefixMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         Check(factory, "prefix matches", data.ExpectedPrefixMatches, matches);
 
-        GC.KeepAlive(store);
+        shape = store.Shape;
         return new Timings(buildMs, insertMs, searchMs, prefixMs, memoryBytes);
     }
 

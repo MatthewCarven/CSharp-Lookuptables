@@ -24,6 +24,13 @@ public sealed class Dataset<T> where T : notnull
     public required int ExpectedAdded { get; init; }
     public required int ExpectedHits { get; init; }
     public required long ExpectedPrefixMatches { get; init; }
+
+    /// <summary>
+    /// For a fixed table indexed by the first <c>depth</c> symbols: how many keys the average stored key shares
+    /// its bucket with (sum of squared bucket sizes / N). Equals N / buckets for evenly spread keys, and
+    /// approaches N when the keys all share a prefix.
+    /// </summary>
+    public required Func<int, double> MeanScanLength { get; init; }
 }
 
 public static class DatasetFactory
@@ -49,6 +56,25 @@ public static class DatasetFactory
             {
                 var bytes = new byte[keyLength];
                 random.NextBytes(bytes);
+                return bytes;
+            },
+            key => key[..prefixLength],
+            pool, inserts, searches, prefixes, prefixLength, random);
+    }
+
+    /// <summary>
+    /// Sparse sequential IDs, stored as 8-byte big-endian numbers drawn from [0, 4 x pool): the top bytes are
+    /// always zero, so a table indexed by the first bytes puts every key in the same bucket.
+    /// </summary>
+    public static Dataset<byte[]> SequentialIds(int pool, int inserts, int searches, int prefixes, int prefixLength, int seed)
+    {
+        var random = new Random(seed);
+        long range = 4L * pool;
+        return Build<byte[], ByteKey>(
+            () =>
+            {
+                var bytes = new byte[8];
+                System.Buffers.Binary.BinaryPrimitives.WriteInt64BigEndian(bytes, random.NextInt64(range));
                 return bytes;
             },
             key => key[..prefixLength],
@@ -108,7 +134,18 @@ public static class DatasetFactory
             ExpectedAdded = added,
             ExpectedHits = hits,
             ExpectedPrefixMatches = CountPrefixMatches<T, TKey>(final, prefixArray, prefixLength),
+            MeanScanLength = depth => MeanScanLength<T, TKey>(pool, depth),
         };
+    }
+
+    private static double MeanScanLength<T, TKey>(List<T> keys, int depth)
+        where T : notnull
+        where TKey : IKeyTraits<T>
+    {
+        double sumOfSquares = 0;
+        foreach (int size in PrefixHistogram<T, TKey>(keys, depth).Values)
+            sumOfSquares += (double)size * size;
+        return sumOfSquares / keys.Count;
     }
 
     /// <summary>Independent answer for the prefix queries: histogram of every key's prefix, O(N + P).</summary>
@@ -116,21 +153,31 @@ public static class DatasetFactory
         where T : notnull
         where TKey : IKeyTraits<T>
     {
-        static long Code(T key, int length)
-        {
-            long code = 0;
-            for (int i = 0; i < length; i++)
-                code = code * TKey.Radix + TKey.SymbolAt(key, i);
-            return code;
-        }
-
-        var histogram = new Dictionary<long, int>();
-        foreach (T key in keys)
-            CollectionsMarshal.GetValueRefOrAddDefault(histogram, Code(key, prefixLength), out _)++;
-
+        Dictionary<long, int> histogram = PrefixHistogram<T, TKey>(keys, prefixLength);
         long total = 0;
         foreach (T prefix in prefixes)
-            total += histogram.GetValueOrDefault(Code(prefix, prefixLength));
+            total += histogram.GetValueOrDefault(PrefixCode<T, TKey>(prefix, prefixLength));
         return total;
+    }
+
+    /// <summary>Number of keys per distinct prefix of <paramref name="length"/> symbols.</summary>
+    private static Dictionary<long, int> PrefixHistogram<T, TKey>(List<T> keys, int length)
+        where T : notnull
+        where TKey : IKeyTraits<T>
+    {
+        var histogram = new Dictionary<long, int>();
+        foreach (T key in keys)
+            CollectionsMarshal.GetValueRefOrAddDefault(histogram, PrefixCode<T, TKey>(key, length), out _)++;
+        return histogram;
+    }
+
+    private static long PrefixCode<T, TKey>(T key, int length)
+        where T : notnull
+        where TKey : IKeyTraits<T>
+    {
+        long code = 0;
+        for (int i = 0; i < length; i++)
+            code = checked(code * TKey.Radix + TKey.SymbolAt(key, i));
+        return code;
     }
 }

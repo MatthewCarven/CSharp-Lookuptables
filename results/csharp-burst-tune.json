@@ -1,0 +1,335 @@
+{
+  "environment": ".NET 10.0.12, Microsoft Windows 10.0.22631, 11th Gen Intel(R) Core(TM) i9-11900H @ 2.50GHz (16 logical cores)",
+  "scenarios": [
+    {
+      "Scenario": {
+        "Id": "tune-bytes-1m",
+        "Title": "Burst threshold - 1M random binary records",
+        "PythonSource": "(new)",
+        "Kind": "Bytes",
+        "KeyLength": 16,
+        "Pool": 1000000,
+        "Inserts": 10000,
+        "Searches": 1000000,
+        "Prefixes": 1000,
+        "PrefixLength": 3,
+        "MaxMeanScan": 1000
+      },
+      "PoolDistinct": 1000000,
+      "FinalDistinct": 1010000,
+      "Results": [
+        {
+          "Structure": "Burst trie, threshold 8",
+          "Family": "Adaptive",
+          "BuildMs": 1628.4949,
+          "InsertNsPerOp": 433.77,
+          "SearchNsPerOp": 249.8759,
+          "PrefixUsPerQuery": 0.3844,
+          "MemoryMB": 267.96092224121094,
+          "Shape": "63,794 inner nodes, 967,568 leaves (avg 1.0 keys), levels per key avg 3.0 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 16",
+          "Family": "Adaptive",
+          "BuildMs": 461.9337,
+          "InsertNsPerOp": 772.99,
+          "SearchNsPerOp": 256.4476,
+          "PrefixUsPerQuery": 0.3963,
+          "MemoryMB": 126.1654281616211,
+          "Shape": "24,930 inner nodes, 502,624 leaves (avg 2.0 keys), levels per key avg 2.5 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 32",
+          "Family": "Adaptive",
+          "BuildMs": 242.5077,
+          "InsertNsPerOp": 219.36,
+          "SearchNsPerOp": 201.4972,
+          "PrefixUsPerQuery": 0.3302999999999999,
+          "MemoryMB": 27.563133239746094,
+          "Shape": "262 inner nodes, 65,695 leaves (avg 15.4 keys), levels per key avg 2.0 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 64",
+          "Family": "Adaptive",
+          "BuildMs": 261.6341,
+          "InsertNsPerOp": 247.82,
+          "SearchNsPerOp": 212.121,
+          "PrefixUsPerQuery": 0.389,
+          "MemoryMB": 27.540267944335938,
+          "Shape": "257 inner nodes, 65,536 leaves (avg 15.4 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 128",
+          "Family": "Adaptive",
+          "BuildMs": 256.9341,
+          "InsertNsPerOp": 255.26,
+          "SearchNsPerOp": 257.8153,
+          "PrefixUsPerQuery": 0.3645,
+          "MemoryMB": 27.540267944335938,
+          "Shape": "257 inner nodes, 65,536 leaves (avg 15.4 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 256",
+          "Family": "Adaptive",
+          "BuildMs": 247.2584,
+          "InsertNsPerOp": 209.8,
+          "SearchNsPerOp": 200.0539,
+          "PrefixUsPerQuery": 0.3395,
+          "MemoryMB": 27.540267944335938,
+          "Shape": "257 inner nodes, 65,536 leaves (avg 15.4 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 512",
+          "Family": "Adaptive",
+          "BuildMs": 254.9424,
+          "InsertNsPerOp": 219.95,
+          "SearchNsPerOp": 209.899,
+          "PrefixUsPerQuery": 0.3172,
+          "MemoryMB": 27.540267944335938,
+          "Shape": "257 inner nodes, 65,536 leaves (avg 15.4 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 1024",
+          "Family": "Adaptive",
+          "BuildMs": 259.0207,
+          "InsertNsPerOp": 255.61,
+          "SearchNsPerOp": 221.3488,
+          "PrefixUsPerQuery": 0.2963,
+          "MemoryMB": 27.540267944335938,
+          "Shape": "257 inner nodes, 65,536 leaves (avg 15.4 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 57.3208,
+          "InsertNsPerOp": 134.64,
+          "SearchNsPerOp": 149.78,
+          "PrefixUsPerQuery": 4419.345,
+          "MemoryMB": 22.176605224609375,
+          "Shape": null
+        }
+      ],
+      "Skipped": []
+    },
+    {
+      "Scenario": {
+        "Id": "tune-words-1m",
+        "Title": "Burst threshold - 1M words",
+        "PythonSource": "(new)",
+        "Kind": "UpperAlpha",
+        "KeyLength": 6,
+        "Pool": 1000000,
+        "Inserts": 10000,
+        "Searches": 1000000,
+        "Prefixes": 1000,
+        "PrefixLength": 3,
+        "MaxMeanScan": 1000
+      },
+      "PoolDistinct": 998348,
+      "FinalDistinct": 1008324,
+      "Results": [
+        {
+          "Structure": "Burst trie, threshold 8",
+          "Family": "Adaptive",
+          "BuildMs": 311.77,
+          "InsertNsPerOp": 350.87,
+          "SearchNsPerOp": 253.0933,
+          "PrefixUsPerQuery": 1.6142,
+          "MemoryMB": 65.98870849609375,
+          "Shape": "18,491 inner nodes, 408,273 leaves (avg 2.5 keys), levels per key avg 4.0 / max 5, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 16",
+          "Family": "Adaptive",
+          "BuildMs": 340.6756,
+          "InsertNsPerOp": 349.17,
+          "SearchNsPerOp": 250.4511,
+          "PrefixUsPerQuery": 1.5573,
+          "MemoryMB": 65.80708312988281,
+          "Shape": "18,279 inner nodes, 406,781 leaves (avg 2.5 keys), levels per key avg 4.0 / max 4, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 32",
+          "Family": "Adaptive",
+          "BuildMs": 465.9204,
+          "InsertNsPerOp": 357.05,
+          "SearchNsPerOp": 271.3049,
+          "PrefixUsPerQuery": 1.3229,
+          "MemoryMB": 65.7976303100586,
+          "Shape": "18,275 inner nodes, 406,712 leaves (avg 2.5 keys), levels per key avg 4.0 / max 4, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 64",
+          "Family": "Adaptive",
+          "BuildMs": 134.3266,
+          "InsertNsPerOp": 491.83,
+          "SearchNsPerOp": 197.6667,
+          "PrefixUsPerQuery": 0.3683,
+          "MemoryMB": 26.804733276367188,
+          "Shape": "3,754 inner nodes, 88,459 leaves (avg 11.4 keys), levels per key avg 3.2 / max 4, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 128",
+          "Family": "Adaptive",
+          "BuildMs": 104.7877,
+          "InsertNsPerOp": 188.41,
+          "SearchNsPerOp": 184.7941,
+          "PrefixUsPerQuery": 0.1796,
+          "MemoryMB": 21.4852294921875,
+          "Shape": "703 inner nodes, 17,576 leaves (avg 57.4 keys), levels per key avg 3.0 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 256",
+          "Family": "Adaptive",
+          "BuildMs": 124.3754,
+          "InsertNsPerOp": 195.99,
+          "SearchNsPerOp": 206.8035,
+          "PrefixUsPerQuery": 0.181,
+          "MemoryMB": 21.469070434570312,
+          "Shape": "703 inner nodes, 17,576 leaves (avg 57.4 keys), levels per key avg 3.0 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 512",
+          "Family": "Adaptive",
+          "BuildMs": 187.8467,
+          "InsertNsPerOp": 214.31,
+          "SearchNsPerOp": 207.8763,
+          "PrefixUsPerQuery": 0.1917,
+          "MemoryMB": 21.48944091796875,
+          "Shape": "703 inner nodes, 17,576 leaves (avg 57.4 keys), levels per key avg 3.0 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 1024",
+          "Family": "Adaptive",
+          "BuildMs": 222.0702,
+          "InsertNsPerOp": 173.16,
+          "SearchNsPerOp": 185.8391,
+          "PrefixUsPerQuery": 0.1734,
+          "MemoryMB": 21.48944091796875,
+          "Shape": "703 inner nodes, 17,576 leaves (avg 57.4 keys), levels per key avg 3.0 / max 3, 0 shared positions skipped"
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 66.0384,
+          "InsertNsPerOp": 233.09,
+          "SearchNsPerOp": 226.205,
+          "PrefixUsPerQuery": 7672.7784,
+          "MemoryMB": 22.176605224609375,
+          "Shape": null
+        }
+      ],
+      "Skipped": []
+    },
+    {
+      "Scenario": {
+        "Id": "tune-ids-1m",
+        "Title": "Burst threshold - 1M sequential IDs",
+        "PythonSource": "(new)",
+        "Kind": "SequentialIds",
+        "KeyLength": 8,
+        "Pool": 1000000,
+        "Inserts": 10000,
+        "Searches": 1000000,
+        "Prefixes": 1000,
+        "PrefixLength": 7,
+        "MaxMeanScan": 1000
+      },
+      "PoolDistinct": 884794,
+      "FinalDistinct": 892498,
+      "Results": [
+        {
+          "Structure": "Burst trie, threshold 8",
+          "Family": "Adaptive",
+          "BuildMs": 1056.4548,
+          "InsertNsPerOp": 376.08,
+          "SearchNsPerOp": 304.0743,
+          "PrefixUsPerQuery": 4.2327,
+          "MemoryMB": 160.08987426757812,
+          "Shape": "15,688 inner nodes, 892,498 leaves (avg 1.0 keys), levels per key avg 3.0 / max 3, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 16",
+          "Family": "Adaptive",
+          "BuildMs": 984.3953,
+          "InsertNsPerOp": 412.4,
+          "SearchNsPerOp": 303.7197,
+          "PrefixUsPerQuery": 4.3083,
+          "MemoryMB": 160.06515502929688,
+          "Shape": "15,688 inner nodes, 892,498 leaves (avg 1.0 keys), levels per key avg 3.0 / max 3, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 32",
+          "Family": "Adaptive",
+          "BuildMs": 524.0089,
+          "InsertNsPerOp": 400.99,
+          "SearchNsPerOp": 291.1763,
+          "PrefixUsPerQuery": 3.5291,
+          "MemoryMB": 160.09596252441406,
+          "Shape": "15,688 inner nodes, 892,498 leaves (avg 1.0 keys), levels per key avg 3.0 / max 3, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 64",
+          "Family": "Adaptive",
+          "BuildMs": 123.0034,
+          "InsertNsPerOp": 533.11,
+          "SearchNsPerOp": 200.3636,
+          "PrefixUsPerQuery": 0.6529,
+          "MemoryMB": 36.526878356933594,
+          "Shape": "2,178 inner nodes, 157,221 leaves (avg 5.7 keys), levels per key avg 2.2 / max 3, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 128",
+          "Family": "Adaptive",
+          "BuildMs": 91.4906,
+          "InsertNsPerOp": 247.92,
+          "SearchNsPerOp": 182.3709,
+          "PrefixUsPerQuery": 0.1762,
+          "MemoryMB": 18.486557006835938,
+          "Shape": "63 inner nodes, 15,625 leaves (avg 57.1 keys), levels per key avg 2.0 / max 2, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 256",
+          "Family": "Adaptive",
+          "BuildMs": 92.1204,
+          "InsertNsPerOp": 235.44,
+          "SearchNsPerOp": 182.2259,
+          "PrefixUsPerQuery": 0.1711,
+          "MemoryMB": 18.48511505126953,
+          "Shape": "63 inner nodes, 15,625 leaves (avg 57.1 keys), levels per key avg 2.0 / max 2, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 512",
+          "Family": "Adaptive",
+          "BuildMs": 94.2609,
+          "InsertNsPerOp": 249.35,
+          "SearchNsPerOp": 187.464,
+          "PrefixUsPerQuery": 0.2125,
+          "MemoryMB": 18.47864532470703,
+          "Shape": "62 inner nodes, 15,617 leaves (avg 57.1 keys), levels per key avg 2.0 / max 2, 5 shared positions skipped"
+        },
+        {
+          "Structure": "Burst trie, threshold 1024",
+          "Family": "Adaptive",
+          "BuildMs": 99.2393,
+          "InsertNsPerOp": 235.39,
+          "SearchNsPerOp": 193.4918,
+          "PrefixUsPerQuery": 0.181,
+          "MemoryMB": 18.47296905517578,
+          "Shape": "62 inner nodes, 15,617 leaves (avg 57.1 keys), levels per key avg 2.0 / max 2, 5 shared positions skipped"
+        },
+        {
+          "Structure": "HashSet\u003CT\u003E",
+          "Family": "BuiltIn",
+          "BuildMs": 48.0641,
+          "InsertNsPerOp": 172.29,
+          "SearchNsPerOp": 174.727,
+          "PrefixUsPerQuery": 3602.8324,
+          "MemoryMB": 18.48035430908203,
+          "Shape": null
+        }
+      ],
+      "Skipped": []
+    }
+  ]
+}

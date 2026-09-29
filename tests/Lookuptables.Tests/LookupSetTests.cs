@@ -19,6 +19,9 @@ public class LookupSetTests
         ["HashSet"] = () => new HashSetStore<string, UpperAlphaKey>(),
         ["SortedList"] = () => new SortedListStore<string, UpperAlphaKey>(),
         ["SortedSet"] = () => new SortedSetStore<string, UpperAlphaKey>(),
+        ["Burst1"] = () => new BurstTrie<string, UpperAlphaKey>(1),
+        ["Burst2"] = () => new BurstTrie<string, UpperAlphaKey>(2),
+        ["BurstDefault"] = () => new BurstTrie<string, UpperAlphaKey>(),
     };
 
     private static readonly Dictionary<string, Func<ILookupSet<byte[]>>> ByteFactories = new()
@@ -31,6 +34,9 @@ public class LookupSetTests
         ["HashSet"] = () => new HashSetStore<byte[], ByteKey>(),
         ["SortedList"] = () => new SortedListStore<byte[], ByteKey>(),
         ["SortedSet"] = () => new SortedSetStore<byte[], ByteKey>(),
+        ["Burst1"] = () => new BurstTrie<byte[], ByteKey>(1),
+        ["Burst2"] = () => new BurstTrie<byte[], ByteKey>(2),
+        ["BurstDefault"] = () => new BurstTrie<byte[], ByteKey>(),
     };
 
     [Theory]
@@ -62,6 +68,80 @@ public class LookupSetTests
 
         AssertMatchesReference(ByteFactories[name], () => Next(6), Next, ByteArrayComparer.Instance,
             (key, prefix) => key.AsSpan().StartsWith(prefix));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    [InlineData(32)]
+    public void BurstTrie_HandlesVariableLengthKeysAndKeysThatArePrefixesOfOthers(int threshold)
+    {
+        // Lengths 1-6 over A-C: plenty of keys end exactly where others continue ("AB", "ABC", "ABCA", ...).
+        var random = new Random(4);
+        string Next(int maxLength) => string.Create(random.Next(1, maxLength + 1), random, (span, r) =>
+        {
+            for (int i = 0; i < span.Length; i++) span[i] = (char)('A' + r.Next(3));
+        });
+
+        AssertMatchesReference(() => new BurstTrie<string, UpperAlphaKey>(threshold), () => Next(6), length => Next(length),
+            StringComparer.Ordinal, (key, prefix) => key.StartsWith(prefix, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void BurstTrie_StaysALinearListUntilTheThresholdThenBursts()
+    {
+        var trie = new BurstTrie<byte[], ByteKey>(burstThreshold: 4);
+        for (byte i = 0; i < 4; i++)
+            trie.AddUnique([i, 0, 0]);
+        Assert.StartsWith("0 inner nodes, 1 leaves", trie.Shape);
+
+        trie.AddUnique([9, 0, 0]);
+        Assert.StartsWith("1 inner nodes, 5 leaves", trie.Shape);
+    }
+
+    [Fact]
+    public void BurstTrie_SkipsSharedPositionsAndSplitsThemWhenAKeyDiffers()
+    {
+        static byte[] Id(long value)
+        {
+            var bytes = new byte[8];
+            System.Buffers.Binary.BinaryPrimitives.WriteInt64BigEndian(bytes, value);
+            return bytes;
+        }
+
+        var trie = new BurstTrie<byte[], ByteKey>(burstThreshold: 8);
+        var reference = new HashSet<byte[]>(ByteArrayComparer.Instance);
+        for (long id = 0; id < 1000; id++)
+        {
+            trie.AddUnique(Id(id * 7));
+            reference.Add(Id(id * 7));
+        }
+        // Bytes 0-5 are zero for every key, so the root branches straight at byte 6.
+        Assert.Contains("levels per key avg 2.0", trie.Shape);
+
+        // A key that differs inside the skipped run (byte 2) and a key that ends inside it both force a split.
+        byte[][] breakers = [Id(0x0000_0100_0000_0000), [0, 0, 0]];
+        foreach (byte[] key in breakers)
+        {
+            Assert.True(trie.AddUnique(key));
+            Assert.False(trie.AddUnique(key));
+            reference.Add(key);
+        }
+
+        Assert.Equal(reference.Count, trie.Count);
+        foreach (byte[] key in reference)
+            Assert.True(trie.Contains(key));
+        Assert.False(trie.Contains(Id(1)));
+        Assert.False(trie.Contains([0, 0]));
+
+        var results = new List<byte[]>();
+        foreach (byte[] prefix in new byte[][] { [], [0], [0, 0, 0], [0, 0, 1], [0, 0, 0, 0, 0, 0, 0x1B] })
+        {
+            results.Clear();
+            int expected = reference.Count(k => k.AsSpan().StartsWith(prefix));
+            Assert.Equal(expected, trie.CollectPrefix(prefix, results));
+            Assert.True(results.ToHashSet(ByteArrayComparer.Instance).SetEquals(reference.Where(k => k.AsSpan().StartsWith(prefix))));
+        }
     }
 
     [Fact]

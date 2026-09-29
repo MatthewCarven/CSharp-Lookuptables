@@ -18,10 +18,15 @@ right bucket, instead of a search through everything.
   has to scan every key. That makes the table about 17,000x faster than a hash set.
 - **For plain "does this key exist?" lookups, `HashSet<T>` is the one to beat.** A flat table ties or beats it
   (9.9 ns vs 21 ns warm, 135 ns vs 129 ns at 1M keys) when each bucket holds about one key, but it costs up to 10x the memory.
+- **Dynamically sized buckets fix the fixed layouts' blind spot.** A burst trie that splits a bucket only when
+  keys pile up in it, and skips byte positions that never vary, handles sequential IDs in 168 ns per lookup. On
+  the same data, fixed 3-byte buckets collapse into a linear scan. It answers prefix queries in 0.07-0.33 µs on
+  every data shape tested and uses about as much memory as a `HashSet`, which is still 1.1-1.7x faster at plain
+  lookups. See [section 5](#5-dynamically-sized-buckets-a-burst-trie).
 - **On disk it scales.** On a 64 GB database, 8x the machine's RAM, the bucket index finds a record in
   **0.36 ms**, while a full scan of the file takes 43 s: about 118,000x faster.
-- **The ported Python design (nested dictionaries) is 1.4-6x faster in C# than in Python.** Replacing the
-  dictionaries with one flat array gives up to another 3x on top.
+- **The ported Python design (nested dictionaries) is 2-6.5x faster in C# than in Python.** Replacing the
+  dictionaries with one flat array gives up to another 4x on top.
 
 ## Quick start
 
@@ -42,12 +47,14 @@ dotnet run -c Release --project bench/Lookuptables.Bench -- python
 | Suite | What it runs |
 |---|---|
 | `python` | The in-memory scripts at their original sizes: Bench, Bench2D, Bench3D, BenchBinary/BenchSet/Bench4d |
-| `scale` | 1,000,000 keys. Structures averaging over 1,000 keys per bucket are skipped |
+| `scale` | 1,000,000 keys. Fixed tables whose average lookup would scan over 1,000 keys are skipped |
+| `adaptive` | The burst trie against everything, on random records, words and sequential IDs |
+| `burst-tune` | The burst trie's split threshold, swept from 8 to 1024 |
 | `disk` | BenchDisk2.py. The default database is 125 MB; `--disk-gb 16` matches the Python script, `--disk-gb 64` is the run below |
-| `all` | `python` + `scale` + `disk` |
+| `all` | `python` + `scale` + `adaptive` + `disk` |
 | `bdn --filter '*' --job short` | BenchmarkDotNet microbenchmarks of `Contains` and the prefix query |
 
-`--help` lists the options (`--reps`, `--seed`, `--out`, ...). Results are written to `results/` as Markdown and JSON.
+`--help` lists the options (`--reps`, `--seed`, `--out`, `--only <scenario>`, ...). Results are written to `results/` as Markdown and JSON.
 
 ## Using the library
 
@@ -68,6 +75,9 @@ table.CollectPrefix([0x1F, 0xA0, 0x07], matches);
 var words = new FlatTableBuckets<string, UpperAlphaKey>(depth: 3);
 words.AddUnique("HELLO");
 words.CollectPrefix("HEL", results);
+
+// Or let the buckets size themselves to the data (see section 5).
+var ids = new BurstTrie<byte[], ByteKey>();
 ```
 
 Every structure implements `ILookupSet<T>`, so they can be swapped freely:
@@ -99,6 +109,7 @@ results/                   the numbers quoted below; results/python has the orig
 | `StandardList`, `StandardBinaryList` | `LinearList<T, TKey>` | O(N) scan |
 | `OneLayerList` ... `FourLayerList`, `BinaryThreeLayerList` | `NestedDictionaryBuckets<T, TKey>(depth)` | Nested `Dictionary<int, ...>` ending in a `List<T>`, the same shape as nested `defaultdict`s. One class covers any depth |
 | (new) | `FlatTableBuckets<T, TKey>(depth)` | The same idea written the C# way: the first *depth* symbols become one array index, so there's no hashing at all. It allocates Radix^depth slots up front |
+| (new) | `BurstTrie<T, TKey>(burstThreshold)` | Dynamically sized buckets: split only where keys pile up, skip positions that never vary. See [section 5](#5-dynamically-sized-buckets-a-burst-trie) |
 | `set()` | `HashSetStore<T, TKey>` | Also `FrozenSetStore`, `SortedListStore` (sorted `List<T>` + `BinarySearch`) and `SortedSetStore` as baselines |
 | `DiskIndexer`, `linear_disk_search_batched` | `DiskIndexer`, `FlatFileScanner` | Same `root/b0/b1/bucket_b2.bin` layout on disk |
 | `str` / `bytes` keys | `UpperAlphaKey` / `ByteKey` | Static abstract interface members, so the JIT compiles a specialised copy of each structure per key type, with no virtual calls |
@@ -107,7 +118,8 @@ results/                   the numbers quoted below; results/python has the orig
 
 Measured on an Intel i9-11900H laptop with .NET 10.0.12 on Windows 11. Full tables:
 [csharp-python.md](results/csharp-python.md), [csharp-scale.md](results/csharp-scale.md),
-[csharp-disk.md](results/csharp-disk.md), [BenchmarkDotNet reports](results/bdn/results).
+[csharp-disk.md](results/csharp-disk.md), [csharp-adaptive.md](results/csharp-adaptive.md),
+[csharp-burst-tune.md](results/csharp-burst-tune.md), [BenchmarkDotNet reports](results/bdn/results).
 
 ### 1. Prefix queries: the lookup table's real advantage
 
@@ -166,23 +178,26 @@ converted to time per operation.
 
 | Structure | Python 3.14 | C# port | C# flat table |
 |---|--:|--:|--:|
-| Linear list | 746 µs | 256 µs | |
-| 3-layer buckets | 625 ns | 355 ns | 126 ns (2 bytes) |
-| 4-layer buckets | 577 ns | 423 ns | |
-| `set` / `HashSet<T>` | 182 ns | 117 ns | |
+| Linear list | 746 µs | 246 µs | |
+| 3-layer buckets | 625 ns | 212 ns | 50 ns (2 bytes) |
+| 4-layer buckets | 577 ns | 286 ns | |
+| `set` / `HashSet<T>` | 182 ns | 64 ns | |
+| Burst trie (not in the Python scripts) | | 80 ns | |
 
 **Bench3D.py: 100k 6-letter words, search per lookup**
 
 | Structure | Python 3.14 | C# port | C# flat table |
 |---|--:|--:|--:|
-| Linear list | 908 µs | 290 µs | |
-| 1 layer | 45.9 µs | 12.2 µs | 13.5 µs |
-| 2 layers | 2.34 µs | 580 ns | 558 ns |
-| 3 layers | 808 ns | 136 ns | 96 ns |
-| `HashSet<T>` (not in the Python script) | | 41 ns | |
+| Linear list | 908 µs | 276 µs | |
+| 1 layer | 45.9 µs | 11.0 µs | 12.2 µs |
+| 2 layers | 2.34 µs | 499 ns | 536 ns |
+| 3 layers | 808 ns | 124 ns | 73 ns |
+| `HashSet<T>` (not in the Python script) | | 38 ns | |
+| Burst trie (not in the Python scripts) | | 61 ns | |
 
 The layering behaves the same way in both languages: each extra layer divides the scan by the number of symbols, so the
-Python scripts' 1,000x+ speed-ups over a plain list carry over.
+Python scripts' 1,000x+ speed-ups over a plain list carry over. At this size, a flat table with about one key per
+bucket (2 bytes for 100k records) beats `HashSet<T>` too.
 
 ### 4. Disk index (BenchDisk2.py), 64 GB
 
@@ -202,9 +217,75 @@ database that fits in RAM gives 0.057 ms per indexed lookup, so reading from the
 
 To reproduce this, run `disk --disk-gb 64`. It needs about 135 GB free, and it deletes the generated files when it finishes.
 
+### 5. Dynamically sized buckets: a burst trie
+
+The fixed layouts decide the number of layers up front. With too few, buckets get huge; with too many, you pay for
+empty slots (the 3-byte flat table allocates 128 MB even for 1,000 keys). They also assume the first bytes vary.
+Sequential IDs break that: their high bytes are always zero, so every key lands in the same bucket and each lookup
+becomes a linear scan.
+
+[`BurstTrie<T, TKey>`](src/Lookuptables/BurstTrie.cs) sizes its buckets from the data instead:
+
+- **Buckets split only when they fill up.** Every bucket starts as a small list that is scanned linearly. When it
+  passes 128 keys it *bursts* into a node indexed by the next symbol, and each child starts as a small list again.
+  The index only gets deeper where keys are dense.
+- **Bytes that never vary are skipped.** A burst branches at the first position where its keys actually differ.
+  Positions they all share are recorded once and checked against a sample key instead of costing a level each. If
+  a later key differs inside such a run, the node is split at exactly that position (path compression).
+- **Fingerprints avoid most key comparisons.** Next to each key, a bucket stores its next 4 symbols packed into
+  64 bits. A lookup scans those with a vectorised `IndexOf` and compares a full key only on a match. A prefix query
+  filters 4 symbols past the bucket without touching the keys at all.
+
+The structure is known as a burst trie (Heinz, Zobel and Williams, 2002).
+Full tables: [csharp-adaptive.md](results/csharp-adaptive.md).
+
+**Lookup time** (1M lookups on the 1M-key sets, 10k on the smaller ones, median of 7 runs):
+
+| Data | Best fixed layout (nested dict or flat table) | Burst trie | `HashSet<T>` |
+|---|--:|--:|--:|
+| 1k random records | 21 ns (flat, 2 bytes) | 32 ns | 28 ns |
+| 1M random records | 149 ns (flat, 3 bytes, **209 MB**) | 226 ns (**28 MB**) | 157 ns (22 MB) |
+| 1M 6-letter words | 260 ns (flat, 4 letters) | **159 ns** | 108 ns |
+| 10k sequential IDs | 12,921 ns (every key in one bucket) | **60 ns** | 36 ns |
+| 1M sequential IDs | not run: ~885,000 keys scanned per lookup | **168 ns** | 140 ns |
+
+**Prefix query time** per query (random records and words: first 3 symbols; IDs: all IDs in one block of 256):
+
+| Data | Best fixed layout | Burst trie | Sorted `List<T>` | `HashSet<T>` |
+|---|--:|--:|--:|--:|
+| 1M random records | 0.25 µs | 0.33 µs | 0.63 µs | 4,390 µs |
+| 1M 6-letter words | 0.21 µs | **0.16 µs** | 2.55 µs | 4,124 µs |
+| 10k sequential IDs | 26.8 µs | **0.07 µs** | 0.57 µs | 33.8 µs |
+| 1M sequential IDs | - | **0.18 µs** | 2.14 µs | 3,357 µs |
+
+**What it built by itself:**
+
+| Data | Shape |
+|---|---|
+| 1M random records | 2 levels, 65,536 buckets of ~15 keys |
+| 1M words | 3 levels, 17,576 buckets of ~57 keys: the 3-letter layout, found without being told |
+| 1M sequential IDs | Skipped the 5 always-zero bytes, then 2 levels, 15,625 buckets of ~57 keys |
+
+**Verdict:**
+
+- **Plain lookups:** it doesn't beat `HashSet<T>`, which is 1.1-1.7x faster in every scenario.
+- **Against the fixed layouts:** it beats every one except on perfectly uniform random bytes. There the 3-byte flat
+  table is 1.5x faster but uses 7.6x the memory. The trie never degenerates: on sequential IDs the fixed layouts
+  are 200-350x slower.
+- **Prefix queries:** it's the best or close to the best on every data shape, 2-16x faster than a sorted array,
+  and uses about as much memory as a `HashSet`.
+
+So if you only ever ask "is this key present?", use `HashSet<T>`. If you need prefix or range queries on data
+whose shape you don't control, this is the structure to use.
+
+**Choosing the threshold** ([csharp-burst-tune.md](results/csharp-burst-tune.md)): below about 64 keys, words and
+sequential IDs burst into 1-3 key leaves, and lookups get 30-60% slower while using up to 10x the memory. Every threshold from 128
+to 1024 builds the same shape at the same speed, so the default is 128.
+
 ## Methodology and differences from the Python scripts
 
 - **Every answer is checked.** Every repetition rebuilds the structure from scratch. After a JIT warm-up, the reported time is the median of 7 runs, and each run checks its counts, hits and prefix matches against expected answers computed independently.
+- **Warm-up by time, not by count.** Each structure is warmed up for at least 1.5 s before measuring, so .NET's tiered JIT has finished optimising it. An earlier version stopped after 50 repetitions, which on small data sets measured partly unoptimised code and made the lookup tables look up to 2x slower than they are. The Python-sized results below were re-run after the fix; the 1M-key, disk and BenchmarkDotNet runs were long enough not to be affected.
 - **Seeded data.** Data comes from `Random(42)` rather than `os.urandom`, so runs are reproducible (`--seed` to change).
 - **Half the searches hit.** Searches are 50% existing keys and 50% random keys. The Python scripts searched random keys only, so they almost always missed.
 - **Bulk pre-load.** Pre-loading uses a bulk load of already-distinct keys instead of N `add_unique` calls. The final state is the same; only the timed insert phase uses `AddUnique`.

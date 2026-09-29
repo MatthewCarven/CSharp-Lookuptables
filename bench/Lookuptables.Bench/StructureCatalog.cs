@@ -12,13 +12,14 @@ public enum Family
 
     /// <summary>A built-in .NET collection - the "primitive" baseline.</summary>
     BuiltIn,
+
+    /// <summary>Buckets that split on demand to follow the data (the burst trie).</summary>
+    Adaptive,
 }
 
-public sealed record StructureFactory<T>(string Name, Family Family, long? BucketCount, Func<ILookupSet<T>> Create)
+/// <param name="IndexDepth">Symbols a fixed table indexes by (0 for the plain list); null when the structure adapts.</param>
+public sealed record StructureFactory<T>(string Name, Family Family, int? IndexDepth, Func<ILookupSet<T>> Create)
 {
-    /// <summary>Average keys scanned per lookup, for bucketed structures (null for the built-ins).</summary>
-    public double? KeysPerBucket(int keys) => BucketCount is { } b ? (double)keys / b : null;
-
     public override string ToString() => Name;
 }
 
@@ -26,35 +27,47 @@ public static class StructureCatalog
 {
     public static IReadOnlyList<StructureFactory<string>> Alpha() =>
     [
-        new("List<T> linear scan", Family.PythonPort, BucketCount: 1, () => new LinearList<string, UpperAlphaKey>()),
-        new("Nested dict, 1 layer", Family.PythonPort, 26, () => new NestedDictionaryBuckets<string, UpperAlphaKey>(1)),
-        new("Nested dict, 2 layers", Family.PythonPort, 26 * 26, () => new NestedDictionaryBuckets<string, UpperAlphaKey>(2)),
-        new("Nested dict, 3 layers", Family.PythonPort, 26 * 26 * 26, () => new NestedDictionaryBuckets<string, UpperAlphaKey>(3)),
-        new("Flat table, 1 symbol", Family.CSharpLookupTable, 26, () => new FlatTableBuckets<string, UpperAlphaKey>(1)),
-        new("Flat table, 2 symbols", Family.CSharpLookupTable, 26 * 26, () => new FlatTableBuckets<string, UpperAlphaKey>(2)),
-        new("Flat table, 3 symbols", Family.CSharpLookupTable, 26 * 26 * 26, () => new FlatTableBuckets<string, UpperAlphaKey>(3)),
-        new("Flat table, 4 symbols", Family.CSharpLookupTable, 26 * 26 * 26 * 26, () => new FlatTableBuckets<string, UpperAlphaKey>(4)),
-        .. BuiltIns<string, UpperAlphaKey>(),
+        new("List<T> linear scan", Family.PythonPort, IndexDepth: 0, () => new LinearList<string, UpperAlphaKey>()),
+        new("Nested dict, 1 layer", Family.PythonPort, 1, () => new NestedDictionaryBuckets<string, UpperAlphaKey>(1)),
+        new("Nested dict, 2 layers", Family.PythonPort, 2, () => new NestedDictionaryBuckets<string, UpperAlphaKey>(2)),
+        new("Nested dict, 3 layers", Family.PythonPort, 3, () => new NestedDictionaryBuckets<string, UpperAlphaKey>(3)),
+        new("Flat table, 1 symbol", Family.CSharpLookupTable, 1, () => new FlatTableBuckets<string, UpperAlphaKey>(1)),
+        new("Flat table, 2 symbols", Family.CSharpLookupTable, 2, () => new FlatTableBuckets<string, UpperAlphaKey>(2)),
+        new("Flat table, 3 symbols", Family.CSharpLookupTable, 3, () => new FlatTableBuckets<string, UpperAlphaKey>(3)),
+        new("Flat table, 4 symbols", Family.CSharpLookupTable, 4, () => new FlatTableBuckets<string, UpperAlphaKey>(4)),
+        .. Shared<string, UpperAlphaKey>(),
     ];
 
     public static IReadOnlyList<StructureFactory<byte[]>> Bytes() =>
     [
-        new("List<T> linear scan", Family.PythonPort, BucketCount: 1, () => new LinearList<byte[], ByteKey>()),
-        new("Nested dict, 3 layers", Family.PythonPort, 1L << 24, () => new NestedDictionaryBuckets<byte[], ByteKey>(3)),
-        new("Nested dict, 4 layers", Family.PythonPort, 1L << 32, () => new NestedDictionaryBuckets<byte[], ByteKey>(4)),
-        new("Flat table, 1 byte", Family.CSharpLookupTable, 256, () => new FlatTableBuckets<byte[], ByteKey>(1)),
-        new("Flat table, 2 bytes", Family.CSharpLookupTable, 1 << 16, () => new FlatTableBuckets<byte[], ByteKey>(2)),
-        new("Flat table, 3 bytes", Family.CSharpLookupTable, 1L << 24, () => new FlatTableBuckets<byte[], ByteKey>(3)),
-        .. BuiltIns<byte[], ByteKey>(),
+        new("List<T> linear scan", Family.PythonPort, IndexDepth: 0, () => new LinearList<byte[], ByteKey>()),
+        new("Nested dict, 3 layers", Family.PythonPort, 3, () => new NestedDictionaryBuckets<byte[], ByteKey>(3)),
+        new("Nested dict, 4 layers", Family.PythonPort, 4, () => new NestedDictionaryBuckets<byte[], ByteKey>(4)),
+        new("Flat table, 1 byte", Family.CSharpLookupTable, 1, () => new FlatTableBuckets<byte[], ByteKey>(1)),
+        new("Flat table, 2 bytes", Family.CSharpLookupTable, 2, () => new FlatTableBuckets<byte[], ByteKey>(2)),
+        new("Flat table, 3 bytes", Family.CSharpLookupTable, 3, () => new FlatTableBuckets<byte[], ByteKey>(3)),
+        .. Shared<byte[], ByteKey>(),
     ];
 
-    private static IEnumerable<StructureFactory<T>> BuiltIns<T, TKey>()
+    /// <summary>The adaptive structure and the built-in collections, for any key type.</summary>
+    private static IEnumerable<StructureFactory<T>> Shared<T, TKey>()
         where T : notnull
         where TKey : IKeyTraits<T> =>
     [
+        new("Burst trie (adaptive)", Family.Adaptive, null, () => new BurstTrie<T, TKey>()),
         new("HashSet<T>", Family.BuiltIn, null, () => new HashSetStore<T, TKey>()),
         new("FrozenSet<T>", Family.BuiltIn, null, () => new FrozenSetStore<T, TKey>()),
         new("Sorted List<T> + BinarySearch", Family.BuiltIn, null, () => new SortedListStore<T, TKey>()),
         new("SortedSet<T>", Family.BuiltIn, null, () => new SortedSetStore<T, TKey>()),
+    ];
+
+    /// <summary>The burst trie at a range of thresholds, with HashSet as the yardstick.</summary>
+    public static IReadOnlyList<StructureFactory<T>> BurstThresholds<T, TKey>()
+        where T : notnull
+        where TKey : IKeyTraits<T> =>
+    [
+        .. new[] { 8, 16, 32, 64, 128, 256, 512, 1024 }.Select(threshold => new StructureFactory<T>(
+            $"Burst trie, threshold {threshold}", Family.Adaptive, null, () => new BurstTrie<T, TKey>(threshold))),
+        new("HashSet<T>", Family.BuiltIn, null, () => new HashSetStore<T, TKey>()),
     ];
 }

@@ -13,7 +13,7 @@
         "Searches": 10000,
         "Prefixes": 1000,
         "PrefixLength": 3,
-        "MaxKeysPerBucket": null
+        "MaxMeanScan": null
       },
       "PoolDistinct": 9995,
       "FinalDistinct": 19979,
@@ -21,110 +21,132 @@
         {
           "Structure": "List\u003CT\u003E linear scan",
           "Family": "PythonPort",
-          "BuildMs": 0.0115,
-          "InsertNsPerOp": 41183.96,
-          "SearchNsPerOp": 41530.98,
-          "PrefixUsPerQuery": 69.7327,
-          "MemoryMB": 0.07628631591796875
+          "BuildMs": 0.0109,
+          "InsertNsPerOp": 41642.66,
+          "SearchNsPerOp": 42674.79,
+          "PrefixUsPerQuery": 70.1299,
+          "MemoryMB": 0.07628631591796875,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 1 layer",
           "Family": "PythonPort",
-          "BuildMs": 0.1162,
-          "InsertNsPerOp": 2037.97,
-          "SearchNsPerOp": 2043.28,
-          "PrefixUsPerQuery": 2.961,
-          "MemoryMB": 0.10491943359375
+          "BuildMs": 0.1402,
+          "InsertNsPerOp": 1770.66,
+          "SearchNsPerOp": 1686.74,
+          "PrefixUsPerQuery": 2.943,
+          "MemoryMB": 0.10491943359375,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 2 layers",
           "Family": "PythonPort",
-          "BuildMs": 0.2723,
-          "InsertNsPerOp": 118.75,
-          "SearchNsPerOp": 111.43,
-          "PrefixUsPerQuery": 0.2023,
-          "MemoryMB": 0.1954498291015625
+          "BuildMs": 0.2744,
+          "InsertNsPerOp": 119.24,
+          "SearchNsPerOp": 113.2,
+          "PrefixUsPerQuery": 0.1986,
+          "MemoryMB": 0.1954498291015625,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 3 layers",
           "Family": "PythonPort",
-          "BuildMs": 0.7523,
-          "InsertNsPerOp": 81.19,
-          "SearchNsPerOp": 61.86,
-          "PrefixUsPerQuery": 0.08,
-          "MemoryMB": 1.3050994873046875
+          "BuildMs": 0.7525,
+          "InsertNsPerOp": 82.35,
+          "SearchNsPerOp": 61.79,
+          "PrefixUsPerQuery": 0.0798,
+          "MemoryMB": 1.3050994873046875,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 1 symbol",
           "Family": "CSharpLookupTable",
-          "BuildMs": 0.0929,
-          "InsertNsPerOp": 2028.01,
-          "SearchNsPerOp": 2018.39,
-          "PrefixUsPerQuery": 3.0901,
-          "MemoryMB": 0.10320281982421875
+          "BuildMs": 0.0995,
+          "InsertNsPerOp": 2113.8,
+          "SearchNsPerOp": 2084.98,
+          "PrefixUsPerQuery": 3.091,
+          "MemoryMB": 0.10320281982421875,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 2 symbols",
           "Family": "CSharpLookupTable",
           "BuildMs": 0.1754,
-          "InsertNsPerOp": 109.74,
-          "SearchNsPerOp": 106.34,
-          "PrefixUsPerQuery": 0.1858,
-          "MemoryMB": 0.14910125732421875
+          "InsertNsPerOp": 110.44,
+          "SearchNsPerOp": 107.8,
+          "PrefixUsPerQuery": 0.1859,
+          "MemoryMB": 0.14910125732421875,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 3 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 0.2772,
-          "InsertNsPerOp": 38.73,
-          "SearchNsPerOp": 37.55,
-          "PrefixUsPerQuery": 0.0507,
-          "MemoryMB": 0.7706680297851562
+          "BuildMs": 0.2893,
+          "InsertNsPerOp": 38.99,
+          "SearchNsPerOp": 36.6,
+          "PrefixUsPerQuery": 0.0479,
+          "MemoryMB": 0.7706680297851562,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 4 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 1.7581,
-          "InsertNsPerOp": 70.41,
-          "SearchNsPerOp": 47.5,
-          "PrefixUsPerQuery": 0.1322,
-          "MemoryMB": 4.313468933105469
+          "BuildMs": 1.7338,
+          "InsertNsPerOp": 69.85,
+          "SearchNsPerOp": 52.97,
+          "PrefixUsPerQuery": 0.1411,
+          "MemoryMB": 4.313468933105469,
+          "Shape": null
+        },
+        {
+          "Structure": "Burst trie (adaptive)",
+          "Family": "Adaptive",
+          "BuildMs": 0.3579,
+          "InsertNsPerOp": 39.71,
+          "SearchNsPerOp": 38.18,
+          "PrefixUsPerQuery": 0.092,
+          "MemoryMB": 0.279754638671875,
+          "Shape": "27 inner nodes, 676 leaves (avg 29.6 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
         },
         {
           "Structure": "HashSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 0.1587,
-          "InsertNsPerOp": 23.84,
-          "SearchNsPerOp": 28.03,
-          "PrefixUsPerQuery": 65.5461,
-          "MemoryMB": 0.19278717041015625
+          "BuildMs": 0.1688,
+          "InsertNsPerOp": 24.56,
+          "SearchNsPerOp": 27.97,
+          "PrefixUsPerQuery": 67.3323,
+          "MemoryMB": 0.19278717041015625,
+          "Shape": null
         },
         {
           "Structure": "FrozenSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 2.6179,
+          "BuildMs": 2.4589,
           "InsertNsPerOp": null,
-          "SearchNsPerOp": 32.18,
-          "PrefixUsPerQuery": 172.7894,
-          "MemoryMB": 0.6282958984375
+          "SearchNsPerOp": 33.8,
+          "PrefixUsPerQuery": 197.3638,
+          "MemoryMB": 0.6282958984375,
+          "Shape": null
         },
         {
           "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
           "Family": "BuiltIn",
-          "BuildMs": 1.1653,
-          "InsertNsPerOp": 1380.39,
-          "SearchNsPerOp": 136.49,
-          "PrefixUsPerQuery": 0.1829,
-          "MemoryMB": 0.07628631591796875
+          "BuildMs": 1.1543,
+          "InsertNsPerOp": 1378.84,
+          "SearchNsPerOp": 137.85,
+          "PrefixUsPerQuery": 0.1924,
+          "MemoryMB": 0.07628631591796875,
+          "Shape": null
         },
         {
           "Structure": "SortedSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 1.3563,
-          "InsertNsPerOp": 177.03,
-          "SearchNsPerOp": 165.89,
-          "PrefixUsPerQuery": 0.4007,
-          "MemoryMB": 0.45760345458984375
+          "BuildMs": 1.3169,
+          "InsertNsPerOp": 176.09,
+          "SearchNsPerOp": 168.68,
+          "PrefixUsPerQuery": 0.4023,
+          "MemoryMB": 0.45760345458984375,
+          "Shape": null
         }
       ],
       "Skipped": []
@@ -141,7 +163,7 @@
         "Searches": 10000,
         "Prefixes": 1000,
         "PrefixLength": 3,
-        "MaxKeysPerBucket": null
+        "MaxMeanScan": null
       },
       "PoolDistinct": 49906,
       "FinalDistinct": 59869,
@@ -149,110 +171,132 @@
         {
           "Structure": "List\u003CT\u003E linear scan",
           "Family": "PythonPort",
-          "BuildMs": 0.0267,
-          "InsertNsPerOp": 189406.65,
-          "SearchNsPerOp": 154141.7,
-          "PrefixUsPerQuery": 210.1548,
-          "MemoryMB": 0.38080596923828125
+          "BuildMs": 0.0288,
+          "InsertNsPerOp": 198716.49,
+          "SearchNsPerOp": 160095.22,
+          "PrefixUsPerQuery": 213.0795,
+          "MemoryMB": 0.38080596923828125,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 1 layer",
           "Family": "PythonPort",
-          "BuildMs": 0.4771,
-          "InsertNsPerOp": 6789,
-          "SearchNsPerOp": 5638.99,
-          "PrefixUsPerQuery": 9.5975,
-          "MemoryMB": 0.40960693359375
+          "BuildMs": 0.5075,
+          "InsertNsPerOp": 6906.37,
+          "SearchNsPerOp": 5647.08,
+          "PrefixUsPerQuery": 9.2213,
+          "MemoryMB": 0.40960693359375,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 2 layers",
           "Family": "PythonPort",
-          "BuildMs": 1.1139,
-          "InsertNsPerOp": 341.81,
-          "SearchNsPerOp": 295.37,
-          "PrefixUsPerQuery": 0.5347,
-          "MemoryMB": 0.7004547119140625
+          "BuildMs": 1.1247,
+          "InsertNsPerOp": 342.74,
+          "SearchNsPerOp": 296.91,
+          "PrefixUsPerQuery": 0.5375,
+          "MemoryMB": 0.7004547119140625,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 3 layers",
           "Family": "PythonPort",
-          "BuildMs": 2.9722,
-          "InsertNsPerOp": 103.83,
-          "SearchNsPerOp": 92.62,
-          "PrefixUsPerQuery": 0.0964,
-          "MemoryMB": 2.789337158203125
+          "BuildMs": 2.9899,
+          "InsertNsPerOp": 104.44,
+          "SearchNsPerOp": 93.65,
+          "PrefixUsPerQuery": 0.0957,
+          "MemoryMB": 2.789337158203125,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 1 symbol",
           "Family": "CSharpLookupTable",
-          "BuildMs": 0.3765,
-          "InsertNsPerOp": 8049.98,
-          "SearchNsPerOp": 6713.63,
-          "PrefixUsPerQuery": 9.673,
-          "MemoryMB": 0.40789031982421875
+          "BuildMs": 0.4278,
+          "InsertNsPerOp": 8270.14,
+          "SearchNsPerOp": 6762.04,
+          "PrefixUsPerQuery": 9.7798,
+          "MemoryMB": 0.40789031982421875,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 2 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 0.6877,
-          "InsertNsPerOp": 361.04,
-          "SearchNsPerOp": 310.26,
-          "PrefixUsPerQuery": 0.5029,
-          "MemoryMB": 0.6541061401367188
+          "BuildMs": 0.6897,
+          "InsertNsPerOp": 370.92,
+          "SearchNsPerOp": 308.62,
+          "PrefixUsPerQuery": 0.5109,
+          "MemoryMB": 0.6541061401367188,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 3 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 1.2165,
-          "InsertNsPerOp": 57.6,
-          "SearchNsPerOp": 55.51,
-          "PrefixUsPerQuery": 0.061,
-          "MemoryMB": 1.5933609008789062
+          "BuildMs": 1.2536,
+          "InsertNsPerOp": 58.62,
+          "SearchNsPerOp": 55.67,
+          "PrefixUsPerQuery": 0.0583,
+          "MemoryMB": 1.5933151245117188,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 4 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 5.0306,
-          "InsertNsPerOp": 60.02,
-          "SearchNsPerOp": 47.32,
-          "PrefixUsPerQuery": 0.1851,
-          "MemoryMB": 7.449798583984375
+          "BuildMs": 5.2406,
+          "InsertNsPerOp": 59.26,
+          "SearchNsPerOp": 47.57,
+          "PrefixUsPerQuery": 0.185,
+          "MemoryMB": 7.449798583984375,
+          "Shape": null
+        },
+        {
+          "Structure": "Burst trie (adaptive)",
+          "Family": "Adaptive",
+          "BuildMs": 1.4373,
+          "InsertNsPerOp": 46.74,
+          "SearchNsPerOp": 45.28,
+          "PrefixUsPerQuery": 0.1664,
+          "MemoryMB": 1.289764404296875,
+          "Shape": "27 inner nodes, 676 leaves (avg 88.6 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
         },
         {
           "Structure": "HashSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 0.7821,
-          "InsertNsPerOp": 59.53,
-          "SearchNsPerOp": 33.63,
-          "PrefixUsPerQuery": 195.0017,
-          "MemoryMB": 0.9988174438476562
+          "BuildMs": 0.9143,
+          "InsertNsPerOp": 81.32,
+          "SearchNsPerOp": 32.83,
+          "PrefixUsPerQuery": 201.2926,
+          "MemoryMB": 0.9988174438476562,
+          "Shape": null
         },
         {
           "Structure": "FrozenSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 8.5206,
+          "BuildMs": 9.8289,
           "InsertNsPerOp": null,
-          "SearchNsPerOp": 29.81,
-          "PrefixUsPerQuery": 532.1703,
-          "MemoryMB": 1.8788375854492188
+          "SearchNsPerOp": 48.66,
+          "PrefixUsPerQuery": 616.9052,
+          "MemoryMB": 1.8788375854492188,
+          "Shape": null
         },
         {
           "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
           "Family": "BuiltIn",
-          "BuildMs": 7.6131,
-          "InsertNsPerOp": 4708.14,
-          "SearchNsPerOp": 177.74,
-          "PrefixUsPerQuery": 0.2416,
-          "MemoryMB": 0.38080596923828125
+          "BuildMs": 7.5149,
+          "InsertNsPerOp": 4756.31,
+          "SearchNsPerOp": 193.83,
+          "PrefixUsPerQuery": 0.2577,
+          "MemoryMB": 0.38080596923828125,
+          "Shape": null
         },
         {
           "Structure": "SortedSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 8.5741,
-          "InsertNsPerOp": 229.21,
-          "SearchNsPerOp": 210.03,
-          "PrefixUsPerQuery": 0.5113,
-          "MemoryMB": 2.2845840454101562
+          "BuildMs": 8.5774,
+          "InsertNsPerOp": 235.35,
+          "SearchNsPerOp": 214.82,
+          "PrefixUsPerQuery": 0.562,
+          "MemoryMB": 2.2845840454101562,
+          "Shape": null
         }
       ],
       "Skipped": []
@@ -269,7 +313,7 @@
         "Searches": 1000,
         "Prefixes": 1000,
         "PrefixLength": 3,
-        "MaxKeysPerBucket": null
+        "MaxMeanScan": null
       },
       "PoolDistinct": 99983,
       "FinalDistinct": 100983,
@@ -277,110 +321,132 @@
         {
           "Structure": "List\u003CT\u003E linear scan",
           "Family": "PythonPort",
-          "BuildMs": 0.054,
-          "InsertNsPerOp": 349526.7,
-          "SearchNsPerOp": 265493.7,
-          "PrefixUsPerQuery": 358.8612,
-          "MemoryMB": 0.7628631591796875
+          "BuildMs": 0.0562,
+          "InsertNsPerOp": 364162.8,
+          "SearchNsPerOp": 276490.5,
+          "PrefixUsPerQuery": 359.889,
+          "MemoryMB": 0.7628631591796875,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 1 layer",
           "Family": "PythonPort",
-          "BuildMs": 0.9687,
-          "InsertNsPerOp": 14529.1,
-          "SearchNsPerOp": 10962.3,
-          "PrefixUsPerQuery": 18.172400000000003,
-          "MemoryMB": 0.81585693359375
+          "BuildMs": 0.9496,
+          "InsertNsPerOp": 14437.3,
+          "SearchNsPerOp": 11042.8,
+          "PrefixUsPerQuery": 17.6917,
+          "MemoryMB": 0.81585693359375,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 2 layers",
           "Family": "PythonPort",
-          "BuildMs": 2.0888,
-          "InsertNsPerOp": 628.5,
-          "SearchNsPerOp": 500.9,
-          "PrefixUsPerQuery": 0.9111,
-          "MemoryMB": 1.3689117431640625
+          "BuildMs": 2.1267,
+          "InsertNsPerOp": 646.2,
+          "SearchNsPerOp": 499,
+          "PrefixUsPerQuery": 0.9079,
+          "MemoryMB": 1.3689117431640625,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 3 layers",
           "Family": "PythonPort",
-          "BuildMs": 6.0945,
-          "InsertNsPerOp": 152.9,
-          "SearchNsPerOp": 119.7,
-          "PrefixUsPerQuery": 0.1154,
-          "MemoryMB": 3.3017349243164062
+          "BuildMs": 6.1214,
+          "InsertNsPerOp": 156.9,
+          "SearchNsPerOp": 123.6,
+          "PrefixUsPerQuery": 0.1157,
+          "MemoryMB": 3.3017349243164062,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 1 symbol",
           "Family": "CSharpLookupTable",
-          "BuildMs": 0.7404,
-          "InsertNsPerOp": 16458.6,
-          "SearchNsPerOp": 12492.2,
-          "PrefixUsPerQuery": 18.1182,
-          "MemoryMB": 0.8141403198242188
+          "BuildMs": 0.7576,
+          "InsertNsPerOp": 16107.700000000003,
+          "SearchNsPerOp": 12225.4,
+          "PrefixUsPerQuery": 17.8096,
+          "MemoryMB": 0.8141403198242188,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 2 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 1.307,
-          "InsertNsPerOp": 685,
-          "SearchNsPerOp": 535.3,
-          "PrefixUsPerQuery": 0.8868,
-          "MemoryMB": 1.3225631713867188
+          "BuildMs": 1.2873,
+          "InsertNsPerOp": 692.5,
+          "SearchNsPerOp": 536.4,
+          "PrefixUsPerQuery": 0.8796,
+          "MemoryMB": 1.3225631713867188,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 3 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 2.6318,
-          "InsertNsPerOp": 91.6,
-          "SearchNsPerOp": 72.6,
-          "PrefixUsPerQuery": 0.071,
-          "MemoryMB": 2.0970001220703125
+          "BuildMs": 2.6979,
+          "InsertNsPerOp": 93.7,
+          "SearchNsPerOp": 73.4,
+          "PrefixUsPerQuery": 0.0706,
+          "MemoryMB": 2.0970001220703125,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 4 symbols",
           "Family": "CSharpLookupTable",
-          "BuildMs": 4.9629,
-          "InsertNsPerOp": 51.5,
-          "SearchNsPerOp": 46.3,
-          "PrefixUsPerQuery": 0.2236,
-          "MemoryMB": 10.992805480957031
+          "BuildMs": 5.1527,
+          "InsertNsPerOp": 61.5,
+          "SearchNsPerOp": 49,
+          "PrefixUsPerQuery": 0.2368,
+          "MemoryMB": 10.992805480957031,
+          "Shape": null
+        },
+        {
+          "Structure": "Burst trie (adaptive)",
+          "Family": "Adaptive",
+          "BuildMs": 6.698,
+          "InsertNsPerOp": 111.7,
+          "SearchNsPerOp": 61.1,
+          "PrefixUsPerQuery": 0.0709,
+          "MemoryMB": 3.598907470703125,
+          "Shape": "671 inner nodes, 16,718 leaves (avg 6.0 keys), levels per key avg 3.0 / max 3, 0 shared positions skipped"
         },
         {
           "Structure": "HashSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 1.7326,
-          "InsertNsPerOp": 35,
-          "SearchNsPerOp": 38.7,
-          "PrefixUsPerQuery": 330.1562,
-          "MemoryMB": 2.07208251953125
+          "BuildMs": 1.733,
+          "InsertNsPerOp": 36,
+          "SearchNsPerOp": 38.4,
+          "PrefixUsPerQuery": 339.0029,
+          "MemoryMB": 2.07208251953125,
+          "Shape": null
         },
         {
           "Structure": "FrozenSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 15.9554,
+          "BuildMs": 17.2559,
           "InsertNsPerOp": null,
-          "SearchNsPerOp": 63.9,
-          "PrefixUsPerQuery": 908.1397,
-          "MemoryMB": 3.218597412109375
+          "SearchNsPerOp": 72.3,
+          "PrefixUsPerQuery": 1035.0344,
+          "MemoryMB": 3.218597412109375,
+          "Shape": null
         },
         {
           "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
           "Family": "BuiltIn",
-          "BuildMs": 16.787,
-          "InsertNsPerOp": 8614.5,
-          "SearchNsPerOp": 201.2,
-          "PrefixUsPerQuery": 0.2881,
-          "MemoryMB": 0.7628631591796875
+          "BuildMs": 16.8594,
+          "InsertNsPerOp": 8641.2,
+          "SearchNsPerOp": 208.1,
+          "PrefixUsPerQuery": 0.3009,
+          "MemoryMB": 0.7628631591796875,
+          "Shape": null
         },
         {
           "Structure": "SortedSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 18.8584,
-          "InsertNsPerOp": 284.8,
-          "SearchNsPerOp": 227.5,
-          "PrefixUsPerQuery": 0.6,
-          "MemoryMB": 4.576927185058594
+          "BuildMs": 18.867,
+          "InsertNsPerOp": 288.3,
+          "SearchNsPerOp": 239.4,
+          "PrefixUsPerQuery": 0.6263,
+          "MemoryMB": 4.576927185058594,
+          "Shape": null
         }
       ],
       "Skipped": []
@@ -397,7 +463,7 @@
         "Searches": 1000,
         "Prefixes": 1000,
         "PrefixLength": 3,
-        "MaxKeysPerBucket": null
+        "MaxMeanScan": null
       },
       "PoolDistinct": 100000,
       "FinalDistinct": 101000,
@@ -405,92 +471,112 @@
         {
           "Structure": "List\u003CT\u003E linear scan",
           "Family": "PythonPort",
-          "BuildMs": 0.0599,
-          "InsertNsPerOp": 312184.9,
-          "SearchNsPerOp": 235179.6,
-          "PrefixUsPerQuery": 353.6618,
-          "MemoryMB": 0.7629928588867188
+          "BuildMs": 0.069,
+          "InsertNsPerOp": 306145.3,
+          "SearchNsPerOp": 245817.7,
+          "PrefixUsPerQuery": 356.4979,
+          "MemoryMB": 0.7629928588867188,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 3 layers",
           "Family": "PythonPort",
-          "BuildMs": 32.1177,
-          "InsertNsPerOp": 453.3,
-          "SearchNsPerOp": 204,
-          "PrefixUsPerQuery": 0.3512,
-          "MemoryMB": 26.49945831298828
+          "BuildMs": 32.8771,
+          "InsertNsPerOp": 463.2,
+          "SearchNsPerOp": 211.6,
+          "PrefixUsPerQuery": 0.3577,
+          "MemoryMB": 26.499435424804688,
+          "Shape": null
         },
         {
           "Structure": "Nested dict, 4 layers",
           "Family": "PythonPort",
-          "BuildMs": 105.3508,
-          "InsertNsPerOp": 618.7,
-          "SearchNsPerOp": 286.8,
-          "PrefixUsPerQuery": 0.5076,
-          "MemoryMB": 50.112274169921875
+          "BuildMs": 98.094,
+          "InsertNsPerOp": 487,
+          "SearchNsPerOp": 286.2,
+          "PrefixUsPerQuery": 0.5154,
+          "MemoryMB": 50.112205505371094,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 1 byte",
           "Family": "CSharpLookupTable",
-          "BuildMs": 0.9916,
-          "InsertNsPerOp": 1565.6,
-          "SearchNsPerOp": 1182.9,
-          "PrefixUsPerQuery": 1.4356,
-          "MemoryMB": 1.0156784057617188
+          "BuildMs": 0.9047,
+          "InsertNsPerOp": 1548.8,
+          "SearchNsPerOp": 1181.3,
+          "PrefixUsPerQuery": 1.4509,
+          "MemoryMB": 1.0156784057617188,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 2 bytes",
           "Family": "CSharpLookupTable",
-          "BuildMs": 2.9221,
-          "InsertNsPerOp": 72.4,
-          "SearchNsPerOp": 62.5,
-          "PrefixUsPerQuery": 0.0968,
-          "MemoryMB": 4.8170013427734375
+          "BuildMs": 2.9577,
+          "InsertNsPerOp": 60.4,
+          "SearchNsPerOp": 50.2,
+          "PrefixUsPerQuery": 0.0832,
+          "MemoryMB": 4.816978454589844,
+          "Shape": null
         },
         {
           "Structure": "Flat table, 3 bytes",
           "Family": "CSharpLookupTable",
-          "BuildMs": 19.5902,
-          "InsertNsPerOp": 169.2,
-          "SearchNsPerOp": 98.1,
-          "PrefixUsPerQuery": 0.1724,
-          "MemoryMB": 136.34154510498047
+          "BuildMs": 20.5618,
+          "InsertNsPerOp": 168.6,
+          "SearchNsPerOp": 101.1,
+          "PrefixUsPerQuery": 0.1853,
+          "MemoryMB": 136.34154510498047,
+          "Shape": null
+        },
+        {
+          "Structure": "Burst trie (adaptive)",
+          "Family": "Adaptive",
+          "BuildMs": 6.6972,
+          "InsertNsPerOp": 100.7,
+          "SearchNsPerOp": 80.3,
+          "PrefixUsPerQuery": 0.0909,
+          "MemoryMB": 8.039527893066406,
+          "Shape": "257 inner nodes, 51,523 leaves (avg 2.0 keys), levels per key avg 2.0 / max 2, 0 shared positions skipped"
         },
         {
           "Structure": "HashSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 2.452,
-          "InsertNsPerOp": 45.5,
-          "SearchNsPerOp": 46.9,
-          "PrefixUsPerQuery": 350.1093,
-          "MemoryMB": 2.07208251953125
+          "BuildMs": 2.4702,
+          "InsertNsPerOp": 63.20000000000001,
+          "SearchNsPerOp": 64,
+          "PrefixUsPerQuery": 361.18,
+          "MemoryMB": 2.07208251953125,
+          "Shape": null
         },
         {
           "Structure": "FrozenSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 12.838,
+          "BuildMs": 12.7764,
           "InsertNsPerOp": null,
-          "SearchNsPerOp": 132.4,
-          "PrefixUsPerQuery": 857.1535,
-          "MemoryMB": 3.2187728881835938
+          "SearchNsPerOp": 76,
+          "PrefixUsPerQuery": 988.1391,
+          "MemoryMB": 3.2187728881835938,
+          "Shape": null
         },
         {
           "Structure": "Sorted List\u003CT\u003E \u002B BinarySearch",
           "Family": "BuiltIn",
-          "BuildMs": 18.6716,
-          "InsertNsPerOp": 8735.7,
-          "SearchNsPerOp": 273.3,
-          "PrefixUsPerQuery": 0.2759,
-          "MemoryMB": 0.7629928588867188
+          "BuildMs": 18.8873,
+          "InsertNsPerOp": 8705,
+          "SearchNsPerOp": 270.3,
+          "PrefixUsPerQuery": 0.2648,
+          "MemoryMB": 0.7629928588867188,
+          "Shape": null
         },
         {
           "Structure": "SortedSet\u003CT\u003E",
           "Family": "BuiltIn",
-          "BuildMs": 20.5719,
-          "InsertNsPerOp": 348,
-          "SearchNsPerOp": 281.1,
-          "PrefixUsPerQuery": 0.6192,
-          "MemoryMB": 4.577705383300781
+          "BuildMs": 20.6345,
+          "InsertNsPerOp": 349.7,
+          "SearchNsPerOp": 286.1,
+          "PrefixUsPerQuery": 0.6085,
+          "MemoryMB": 4.577705383300781,
+          "Shape": null
         }
       ],
       "Skipped": []

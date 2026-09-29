@@ -22,7 +22,12 @@ public static class Report
     public static string Describe(ScenarioResult r)
     {
         Scenario s = r.Scenario;
-        string keys = s.Kind == KeyKind.UpperAlpha ? $"{s.KeyLength}-letter A-Z words" : $"{s.KeyLength}-byte random records";
+        string keys = s.Kind switch
+        {
+            KeyKind.UpperAlpha => $"{s.KeyLength}-letter A-Z words",
+            KeyKind.SequentialIds => $"{s.KeyLength}-byte big-endian sequential IDs drawn from [0, {4L * s.Pool:N0})",
+            _ => $"{s.KeyLength}-byte random records",
+        };
         return $"{keys}; {s.Pool:N0} generated -> {r.PoolDistinct:N0} distinct pre-loaded; " +
                $"{s.Inserts:N0} inserts; {s.Searches:N0} searches (50% hits); {s.Prefixes:N0} prefix queries of {s.PrefixLength} symbols";
     }
@@ -57,7 +62,12 @@ public static class Report
                     $"{x.SearchNsPerOp:N1} | {x.PrefixUsPerQuery:N2} | {x.MemoryMB:N1} | {vsList} | {x.SearchNsPerOp / hashSearch:N2}x |");
             }
             if (r.Skipped.Count > 0)
-                sb.AppendLine($"\nSkipped (more than 1,000 keys per bucket on average, i.e. effectively a linear scan at this size): {string.Join(", ", r.Skipped)}.");
+            {
+                sb.AppendLine($"\nSkipped because an average lookup would scan more than {r.Scenario.MaxMeanScan:N0} keys " +
+                              $"(effectively a linear scan at this size): {string.Join("; ", r.Skipped)}.");
+            }
+            foreach (StructureResult x in r.Results.Where(x => x.Shape is not null))
+                sb.AppendLine($"\nShape of {x.Structure}: {x.Shape}.");
             sb.AppendLine();
         }
         return sb.ToString();
@@ -75,6 +85,7 @@ public static class Report
         Family.PythonPort => "Python port",
         Family.CSharpLookupTable => "C# lookup table",
         Family.BuiltIn => "Built-in",
+        Family.Adaptive => "Adaptive (new)",
         _ => family.ToString(),
     };
 }

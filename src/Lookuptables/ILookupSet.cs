@@ -25,6 +25,9 @@ public interface ILookupSet<T>
     /// <summary>Python <c>find</c>.</summary>
     bool Contains(T item);
 
+    /// <summary>Optional description of the structure's current shape (depth, bucket sizes), for reports.</summary>
+    string? Shape => null;
+
     /// <summary>Appends every stored key that starts with <paramref name="prefix"/> to <paramref name="results"/>.</summary>
     /// <returns>The number of keys appended.</returns>
     int CollectPrefix(T prefix, List<T> results);
