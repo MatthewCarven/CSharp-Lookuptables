@@ -1,4 +1,5 @@
 using System.Buffers;
+using Microsoft.Win32.SafeHandles;
 
 namespace Lookuptables;
 
@@ -68,39 +69,98 @@ public sealed class DiskIndexer
     }
 }
 
+/// <summary>Called for every record of a scan; return false to stop early.</summary>
+public delegate bool RecordVisitor(ReadOnlySpan<byte> record, long recordNumber);
+
 /// <summary>
-/// The control group: a batched linear scan of one flat file (<c>linear_disk_search_batched</c>).
-/// Unlike the Python version, which searches for the target anywhere in the batch (<c>target in chunk_batch</c>),
-/// this compares record-aligned slices only, so it cannot report a match that straddles two records.
+/// The control group: a linear scan of one flat file (<c>linear_disk_search_batched</c>). It reads large batches
+/// and fetches the next batch from disk while the current one is being checked, so the scan runs as close to the
+/// drive's sequential read speed as it can. Unlike the Python version, which searches for the target anywhere in
+/// the batch (<c>target in chunk_batch</c>), records are compared on record boundaries only, so a match can never
+/// straddle two records.
 /// </summary>
 public static class FlatFileScanner
 {
-    public static bool Contains(string path, ReadOnlySpan<byte> target, int recordSize, int batchRecords)
+    /// <summary>One scan per target: stops at the first matching record.</summary>
+    public static bool Contains(string path, byte[] target, int recordSize, int batchRecords)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(batchRecords, 1);
         if (target.Length != recordSize)
             throw new ArgumentException($"Target is {target.Length} bytes, expected {recordSize}.", nameof(target));
+        bool found = false;
+        Scan(path, recordSize, batchRecords, (record, _) =>
+        {
+            found = record.SequenceEqual(target);
+            return !found;
+        });
+        return found;
+    }
 
+    /// <summary>Visits every record in file order until <paramref name="visitor"/> returns false.</summary>
+    /// <returns>The number of bytes read.</returns>
+    public static long Scan(string path, int recordSize, int batchRecords, RecordVisitor visitor)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(recordSize, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(batchRecords, 1);
         int batchBytes = checked(recordSize * batchRecords);
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(batchBytes);
+        // Declared first so it is disposed last, after any read-ahead has finished with it.
+        using SafeFileHandle handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.SequentialScan);
+        byte[] current = ArrayPool<byte>.Shared.Rent(batchBytes);
+        byte[] next = ArrayPool<byte>.Shared.Rent(batchBytes);
+        Task<int>? pending = null;
         try
         {
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
-                bufferSize: 0, FileOptions.SequentialScan);
-            int read;
-            while ((read = stream.ReadAtLeast(buffer.AsSpan(0, batchBytes), batchBytes, throwOnEndOfStream: false)) > 0)
+            long length = RandomAccess.GetLength(handle);
+            long offset = 0, bytesRead = 0, recordNumber = 0;
+            int read = ReadFull(handle, current, batchBytes, offset);
+            while (read > 0)
             {
-                for (int offset = 0; offset + recordSize <= read; offset += recordSize)
+                bytesRead += read;
+                long nextOffset = offset + read;
+                if (nextOffset < length)
                 {
-                    if (buffer.AsSpan(offset, recordSize).SequenceEqual(target))
-                        return true;
+                    byte[] target = next;
+                    pending = Task.Run(() => ReadFull(handle, target, batchBytes, nextOffset));
                 }
+
+                for (int position = 0; position + recordSize <= read; position += recordSize, recordNumber++)
+                {
+                    if (!visitor(current.AsSpan(position, recordSize), recordNumber))
+                        return bytesRead;
+                }
+
+                read = pending?.GetAwaiter().GetResult() ?? 0;
+                pending = null;
+                offset = nextOffset;
+                (current, next) = (next, current);
             }
-            return false;
+            return bytesRead;
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(buffer);
+            // An early stop can leave a read-ahead in flight into one of the buffers; let it land before recycling
+            // them. Its result is not needed, so neither is any error it hit.
+            try
+            {
+                pending?.Wait();
+            }
+            catch (AggregateException)
+            {
+            }
+            ArrayPool<byte>.Shared.Return(current);
+            ArrayPool<byte>.Shared.Return(next);
         }
+    }
+
+    private static int ReadFull(SafeFileHandle handle, byte[] buffer, int count, long offset)
+    {
+        int total = 0;
+        while (total < count)
+        {
+            int read = RandomAccess.Read(handle, buffer.AsSpan(total, count - total), offset + total);
+            if (read == 0)
+                break;
+            total += read;
+        }
+        return total;
     }
 }

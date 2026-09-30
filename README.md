@@ -23,8 +23,10 @@ right bucket, instead of a search through everything.
   the same data, fixed 3-byte buckets collapse into a linear scan. It answers prefix queries in 0.07-0.33 µs on
   every data shape tested and uses about as much memory as a `HashSet`, which is still 1.1-1.7x faster at plain
   lookups. See [section 5](#5-dynamically-sized-buckets-a-burst-trie).
-- **On disk it scales.** On a 64 GB database, 8x the machine's RAM, the bucket index finds a record in
-  **0.36 ms**, while a full scan of the file takes 43 s: about 118,000x faster.
+- **On disk, the honest speed-up depends on the question.** On a 64 GB file (4x RAM), an in-RAM burst trie
+  index finds a record in **0.15 ms**. One sequential pass that answers all 131,070 lookups at once takes 66.6 s, so
+  for a batch the index is only **3.4x** faster. For single lookups, where each one needs its own ~49 s scan, it is
+  around 320,000x faster.
 - **The ported Python design (nested dictionaries) is 2-6.5x faster in C# than in Python.** Replacing the
   dictionaries with one flat array gives up to another 4x on top.
 
@@ -50,7 +52,7 @@ dotnet run -c Release --project bench/Lookuptables.Bench -- python
 | `scale` | 1,000,000 keys. Fixed tables whose average lookup would scan over 1,000 keys are skipped |
 | `adaptive` | The burst trie against everything, on random records, words and sequential IDs |
 | `burst-tune` | The burst trie's split threshold, swept from 8 to 1024 |
-| `disk` | BenchDisk2.py. The default database is 125 MB; `--disk-gb 16` matches the Python script, `--disk-gb 64` is the run below |
+| `disk` | BenchDisk2.py. The default database is 125 MB; `--disk-gb 16` matches the Python script, `--disk-gb 64 --no-dir-index` is the run below |
 | `all` | `python` + `scale` + `adaptive` + `disk` |
 | `bdn --filter '*' --job short` | BenchmarkDotNet microbenchmarks of `Contains` and the prefix query |
 
@@ -201,21 +203,47 @@ bucket (2 bytes for 100k records) beats `HashSet<T>` too.
 
 ### 4. Disk index (BenchDisk2.py), 64 GB
 
-1,048,592 records of 64 KB each, stored twice: a 64 GB flat file and a 64 GB bucket index, 128 GB in total. That is 8x the
-machine's 15.8 GB of RAM, so neither the OS file cache nor the SSD's own cache can hold it, and the reads really come off
-the SSD. The run made 131,070 lookups, half of them hits spread across every record on disk
+1,048,592 random records of 64 KB each, in a 64 GB flat file: 4x the machine's 15.8 GB of RAM, so the reads come
+off the SSD rather than the OS file cache. Each method answers its own 131,070 lookups, half of them hits spread over
+every record, so no method reads records another one has already pulled into the cache
 ([results/csharp-disk.md](results/csharp-disk.md)).
 
-| Method | Per lookup | All 131,070 lookups |
-|---|--:|--:|
-| Indexed: open one bucket file and read ~64 KB | **0.36 ms** | 47 s |
-| Batched full scan of the flat file (5 samples, 913 MB/s) | 42.7 s | ~1,554 hours (projected) |
+The linear scan is measured two ways, because the two answer different questions:
 
-That's a **~118,000x** speed-up. Writing the database took 24 minutes, averaging 90 MB/s: the SSD slowed down once its
-fast write cache filled, and each record also creates or appends to a small index file. For comparison, a 125 MB
-database that fits in RAM gives 0.057 ms per indexed lookup, so reading from the SSD itself adds about 0.3 ms per lookup.
+- **One pass answering every lookup at once** is how you would really use a scan when you have a batch of lookups.
+  It measures throughput.
+- **One full pass per lookup** is the Python script's comparison. It measures latency: a lookup that arrives alone
+  and needs an answer now.
 
-To reproduce this, run `disk --disk-gb 64`. It needs about 135 GB free, and it deletes the generated files when it finishes.
+| Method | Index | Per lookup | All 131,070 lookups |
+|---|---|--:|--:|
+| Linear scan, one pass answering every lookup at once | none | 0.51 ms (average) | **66.6 s** |
+| Burst trie in RAM, then one read from the flat file | 77 MB of RAM, built in 0.4 s | **0.15 ms** | 19.8 s |
+| `Dictionary<UInt128, long>` in RAM, then one read from the flat file | 58 MB of RAM, built in 0.1 s | **0.14 ms** | 18.8 s |
+| Linear scan, one full pass per lookup | none | ~49 s | ~1,770 hours (projected) |
+
+The per-lookup scan is projected from 5 samples at 1 GB/s. A miss reads the whole file (65 s) and a hit stops, on
+average, halfway through. The samples happened to be 4 misses out of 5, so the expected cost at 50% hits (~49 s) is
+used here rather than the raw sample average (63 s).
+
+**What this shows:**
+
+- **Batch lookups:** an index is about **3.4-3.5x faster** than a scan, not 100,000x. For a batch known in advance, one
+  sequential pass at 1 GB/s is hard to beat by much.
+- **Single lookups:** the index answers in 0.15 ms where a scan takes about 49 s, around **320,000x** faster. That's
+  the case the huge numbers apply to.
+- **Trie vs dictionary:** they perform the same here. Each lookup is one random 64 KB read from the SSD, and the
+  in-RAM step is negligible next to it. The trie's advantage is prefix queries, not exact lookups.
+- **Against the Python design:** keeping a small index in RAM that points into one flat file beats the directory
+  tree (one bucket file per 3-byte prefix). An earlier 64 GB run measured the directory tree at 0.36 ms per lookup
+  ([results/csharp-disk-directory-index.md](results/csharp-disk-directory-index.md); a separate run, not a
+  same-run comparison). It also needed a second 64 GB copy of the data and 24 minutes to build, against 0.4 s for the trie.
+
+Writing the 64 GB flat file took 325 s. That averages 202 MB/s: writes ran at about 1.4 GB/s until the SSD's fast
+write cache filled.
+
+To reproduce this, run `disk --disk-gb 64 --no-dir-index`. It needs about 70 GB free, and it deletes the generated files
+when it finishes. Leave out `--no-dir-index` to also build the directory tree, which needs about 135 GB free.
 
 ### 5. Dynamically sized buckets: a burst trie
 

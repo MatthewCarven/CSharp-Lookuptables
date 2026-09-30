@@ -27,6 +27,7 @@ const string Usage = """
       --disk-gb N         size the flat file in GB instead (the index takes the same again)
       --disk-lookups N    indexed lookups (default 131070, as in BenchDisk2.py)
       --keep-disk         keep the generated disk files
+      --no-dir-index      skip the Python-style directory index (halves the disk space the disk suite needs)
     """;
 
 if (args.Contains("-h") || args.Contains("--help"))
@@ -47,7 +48,7 @@ int reps = 7, seed = 42, diskRecords = 2000, diskLookups = 131_070;
 string outDir = "results", diskDir = "disk-bench";
 string? only = null;
 const int DiskRecordSize = 65_535; // RECORD_SIZE in BenchDisk2.py
-bool keepDisk = false;
+bool keepDisk = false, dirIndex = true;
 
 for (int i = 0; i < args.Length; i++)
 {
@@ -63,6 +64,7 @@ for (int i = 0; i < args.Length; i++)
         case "--disk-gb": diskRecords = checked((int)(double.Parse(Value()) * (1L << 30) / DiskRecordSize)); break;
         case "--disk-lookups": diskLookups = int.Parse(Value()); break;
         case "--keep-disk": keepDisk = true; break;
+        case "--no-dir-index": dirIndex = false; break;
         case "python" or "scale" or "adaptive" or "burst-tune" or "disk": suites.Add(args[i]); break;
         case "all": suites.UnionWith(["python", "scale", "adaptive", "disk"]); break;
         default:
@@ -145,7 +147,7 @@ if (suites.Contains("disk"))
 {
     Console.WriteLine();
     markdown += "\n" + DiskBenchmark.Run(new DiskOptions(Path.GetFullPath(diskDir), diskRecords, DiskRecordSize, diskLookups,
-        LinearSamples: 5, BatchRecords: 1024, keepDisk, seed));
+        LinearSamples: 5, BatchRecords: 1024, keepDisk, seed, dirIndex));
 }
 
 string stem = Path.Combine(outDir, "csharp-" + string.Join("-", suites.Order()));
