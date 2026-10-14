@@ -144,6 +144,54 @@ public class LookupSetTests
         }
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(32)]
+    [InlineData(128)]
+    public void BurstTrie_PrefixRange_IsTheFirstAndLastKeyWithThePrefix(int threshold)
+    {
+        // Strings over A-C of lengths 1-6: plenty of keys end exactly where others continue.
+        var random = new Random(5);
+        string Letters(int length) => string.Create(length, random, (span, r) =>
+        {
+            for (int i = 0; i < span.Length; i++) span[i] = (char)('A' + r.Next(3));
+        });
+        AssertPrefixRanges(new BurstTrie<string, UpperAlphaKey>(threshold), () => Letters(random.Next(1, 7)), Letters,
+            (key, length) => key[..length]);
+
+        // Bytes 0-2 of lengths 1-6.
+        byte[] Bytes(int length)
+        {
+            var bytes = new byte[length];
+            for (int i = 0; i < length; i++) bytes[i] = (byte)random.Next(3);
+            return bytes;
+        }
+        AssertPrefixRanges(new BurstTrie<byte[], ByteKey>(threshold), () => Bytes(random.Next(1, 7)), Bytes,
+            (key, length) => key[..length]);
+
+        // Sequential IDs, whose shared high bytes the trie skips, with a few short keys that end inside that run.
+        byte[] Id()
+        {
+            if (random.Next(50) == 0)
+                return new byte[random.Next(1, 4)];
+            var bytes = new byte[8];
+            System.Buffers.Binary.BinaryPrimitives.WriteInt64BigEndian(bytes, random.Next(5000) * 7L);
+            return bytes;
+        }
+        AssertPrefixRanges(new BurstTrie<byte[], ByteKey>(threshold), Id, length => length <= 6 ? new byte[length] : Bytes(length),
+            (key, length) => key[..length]);
+    }
+
+    [Fact]
+    public void BurstTrie_PrefixRange_OfAnEmptyTrieIsNothing()
+    {
+        var trie = new BurstTrie<byte[], ByteKey>();
+        Assert.False(trie.TryGetPrefixRange([], out _, out _));
+        Assert.False(trie.TryGetPrefixRange([1], out _, out _));
+    }
+
     [Fact]
     public void FrozenSet_MatchesReferenceAfterBulkLoad()
     {
@@ -180,6 +228,43 @@ public class LookupSetTests
     {
         // 256^4 slots would be 32 GB of references.
         Assert.Throws<ArgumentOutOfRangeException>(() => new FlatTableBuckets<byte[], ByteKey>(4));
+    }
+
+    /// <summary>
+    /// TryGetPrefixRange against a sorted reference: for prefixes of every length from 0 to 8, random and taken from
+    /// stored keys, the first and last matching key, or none.
+    /// </summary>
+    private static void AssertPrefixRanges<T, TKey>(BurstTrie<T, TKey> trie, Func<T> nextKey, Func<int, T> nextPrefix, Func<T, int, T> truncate)
+        where T : notnull
+        where TKey : IKeyTraits<T>
+    {
+        var keys = new HashSet<T>(TKey.EqualityComparer);
+        for (int i = 0; i < 2000; i++)
+        {
+            T key = nextKey();
+            Assert.Equal(keys.Add(key), trie.AddUnique(key));
+        }
+        T[] sorted = keys.Order(TKey.Comparer).ToArray();
+
+        var prefixes = new List<T>();
+        for (int length = 0; length <= 8; length++)
+            for (int i = 0; i < 30; i++)
+                prefixes.Add(nextPrefix(length));
+        foreach (T key in sorted.Where((_, i) => i % 10 == 0))
+            for (int length = 0; length <= TKey.Length(key); length++)
+                prefixes.Add(truncate(key, length));
+
+        foreach (T prefix in prefixes)
+        {
+            T[] matching = sorted.Where(k => TKey.StartsWith(k, prefix)).ToArray();
+            bool found = trie.TryGetPrefixRange(prefix, out T? first, out T? last);
+            Assert.Equal(matching.Length > 0, found);
+            if (found)
+            {
+                Assert.True(TKey.AreEqual(matching[0], first!));
+                Assert.True(TKey.AreEqual(matching[^1], last!));
+            }
+        }
     }
 
     private static void AssertMatchesReference<T>(

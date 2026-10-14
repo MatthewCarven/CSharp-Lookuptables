@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Lookuptables;
 
 /// <summary>
@@ -201,6 +203,116 @@ public sealed class BurstTrie<T, TKey> : ILookupSet<T>
             }
         }
         return results.Count - before;
+    }
+
+    /// <summary>
+    /// The smallest and largest stored keys that start with <paramref name="prefix"/> (in the order of
+    /// <see cref="IKeyTraits{T}.Comparer"/>), without collecting the keys between them. Where the keys are numbered
+    /// in sorted order (records in a flat file sorted by key, say), the two ends give the whole run, so a prefix
+    /// that matches millions of keys costs no more than one that matches a few.
+    /// </summary>
+    /// <remarks>
+    /// Children are visited in symbol order, which is key order for <see cref="ByteKey"/> and
+    /// <see cref="UpperAlphaKey"/>, and a key that ends at a node comes before every key below it. Only the leaves
+    /// at the two ends are scanned (each holds at most the burst threshold's keys).
+    /// </remarks>
+    /// <returns>False if no stored key starts with the prefix.</returns>
+    public bool TryGetPrefixRange(T prefix, [MaybeNullWhen(false)] out T first, [MaybeNullWhen(false)] out T last)
+    {
+        first = last = default;
+        int length = TKey.Length(prefix);
+        Node node = _root;
+        int depth = 0;
+        while (node is Inner inner)
+        {
+            int mismatch = inner.Mismatch(prefix, length);
+            if (mismatch < inner.Depth && mismatch < length)
+                return false;
+            if (length <= inner.Depth)
+            {
+                // Every key below this node starts with the prefix.
+                first = Smallest(inner);
+                last = Largest(inner);
+                return true;
+            }
+            Node? child = inner.Children[TKey.SymbolAt(prefix, inner.Depth)];
+            if (child is null)
+                return false;
+            node = child;
+            depth = inner.Depth + 1;
+        }
+
+        // A leaf: its keys share the path so far, so check the rest of the prefix (fingerprints first, as
+        // CollectPrefix does) and keep the smallest and largest that match.
+        var leaf = (Leaf)node;
+        int remaining = length - depth;
+        int covered = Math.Clamp(remaining, 0, FingerprintSymbols);
+        ulong mask = covered == 0 ? 0 : ulong.MaxValue << (FingerprintBits * (FingerprintSymbols - covered));
+        ulong wanted = covered == 0 ? 0 : Fingerprint(prefix, depth) & mask;
+        bool found = false;
+        for (int i = 0; i < leaf.Count; i++)
+        {
+            T item = leaf.Items[i];
+            if ((leaf.Fingerprints[i] & mask) != wanted || (remaining > FingerprintSymbols && !TKey.StartsWith(item, prefix)))
+                continue;
+            if (!found || TKey.Comparer.Compare(item, first!) < 0)
+                first = item;
+            if (!found || TKey.Comparer.Compare(item, last!) > 0)
+                last = item;
+            found = true;
+        }
+        return found;
+    }
+
+    /// <summary>The smallest key at or below a node: a key ending there, or else down the first child.</summary>
+    private static T Smallest(Node node)
+    {
+        while (node is Inner inner)
+        {
+            if (inner.HasTerminal)
+                return inner.Terminal!;
+            node = FirstChild(inner, ascending: true) ?? throw new InvalidOperationException("An inner node with no keys.");
+        }
+        return Extreme((Leaf)node, sign: -1);
+    }
+
+    /// <summary>The largest key at or below a node: down the last child, or the key ending there if it has none.</summary>
+    private static T Largest(Node node)
+    {
+        while (node is Inner inner)
+        {
+            Node? child = FirstChild(inner, ascending: false);
+            if (child is null)
+                return inner.HasTerminal ? inner.Terminal! : throw new InvalidOperationException("An inner node with no keys.");
+            node = child;
+        }
+        return Extreme((Leaf)node, sign: 1);
+    }
+
+    private static Node? FirstChild(Inner inner, bool ascending)
+    {
+        Node?[] children = inner.Children;
+        for (int i = 0; i < children.Length; i++)
+        {
+            Node? child = children[ascending ? i : children.Length - 1 - i];
+            if (child is not null)
+                return child;
+        }
+        return null;
+    }
+
+    /// <summary>A leaf's smallest key (<paramref name="sign"/> -1) or largest (+1).</summary>
+    private static T Extreme(Leaf leaf, int sign)
+    {
+        if (leaf.Count == 0)
+            throw new InvalidOperationException("An empty leaf below an inner node.");
+        T best = leaf.Items[0];
+        for (int i = 1; i < leaf.Count; i++)
+        {
+            if (Math.Sign(TKey.Comparer.Compare(leaf.Items[i], best)) == sign)
+                best = leaf.Items[i];
+        }
+        return best;
     }
 
     private bool Insert(T item, bool checkExisting)
