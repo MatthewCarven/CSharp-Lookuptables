@@ -91,6 +91,21 @@ Every structure implements `ILookupSet<T>`, so they can be swapped freely:
 | `CollectPrefix(prefix, results)` | The "beginning 3 bytes" lookup from the original README |
 | `LoadDistinct(items)` | Bulk load without uniqueness checks |
 
+`BurstTrie` also has `TryGetPrefixRange(prefix, out first, out last)`: the smallest and largest stored keys that
+start with a prefix, without collecting the ones between. When the keys are numbered in sorted order (records in a
+flat file sorted by key, say), the two ends give the whole run, so a prefix that matches millions of keys costs no
+more than one that matches a few. It walks down the first and last children from the prefix's node and scans only
+the two leaves at the ends.
+
+```csharp
+// Keys: a record's sort key, then its number in the sorted flat file (big-endian).
+if (trie.TryGetPrefixRange(prefix, out byte[]? first, out byte[]? last))
+{
+    long from = BinaryPrimitives.ReadInt64BigEndian(first.AsSpan(KeyBytes));
+    long to = BinaryPrimitives.ReadInt64BigEndian(last.AsSpan(KeyBytes));   // records from..to, inclusive
+}
+```
+
 To support another key type, implement `IKeyTraits<T>`, a struct with static members that says how many symbols
 there are per layer and how to read, compare and prefix-match keys. See `UpperAlphaKey` and `ByteKey` in
 [KeyTraits.cs](src/Lookuptables/KeyTraits.cs).
